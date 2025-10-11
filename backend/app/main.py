@@ -1,6 +1,7 @@
 from fastapi import FastAPI
 
 from app.api.auth import router as auth_router
+from app.api.competitors import router as competitors_router
 
 app = FastAPI(
     title="AI Competitive Intelligence Platform",
@@ -9,6 +10,7 @@ app = FastAPI(
 )
 
 app.include_router(auth_router, prefix="/auth", tags=["authentication"])
+app.include_router(competitors_router, prefix="/competitors", tags=["competitors"])
 
 @app.get("/")
 async def root():
