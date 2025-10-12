@@ -16,5 +16,6 @@ class Competitor(Base):
     created_at = Column(DateTime(timezone=True), server_default=func.now())
     updated_at = Column(DateTime(timezone=True), onupdate=func.now())
     
-    # Relationship
+    # Relationships
     user = relationship("User", back_populates="competitors")
+    data_sources = relationship("DataSource", back_populates="competitor")
