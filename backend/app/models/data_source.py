@@ -20,3 +20,4 @@ class DataSource(Base):
     # Relationships
     competitor = relationship("Competitor", back_populates="data_sources")
     raw_contents = relationship("RawContent", back_populates="data_source")
+    scraping_schedule = relationship("ScrapingSchedule", back_populates="data_source", uselist=False)
