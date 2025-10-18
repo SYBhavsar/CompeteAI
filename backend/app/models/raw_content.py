@@ -17,5 +17,6 @@ class RawContent(Base):
     scraped_at = Column(DateTime(timezone=True), server_default=func.now())
     created_at = Column(DateTime(timezone=True), server_default=func.now())
     
-    # Relationship
+    # Relationships
     data_source = relationship("DataSource", back_populates="raw_contents")
+    processed_insights = relationship("ProcessedInsights", back_populates="raw_content", uselist=False)

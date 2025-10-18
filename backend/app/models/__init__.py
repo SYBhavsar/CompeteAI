@@ -4,5 +4,6 @@ from .competitor import Competitor
 from .data_source import DataSource
 from .raw_content import RawContent
 from .scraping_schedule import ScrapingSchedule
+from .processed_insights import ProcessedInsights
 
-__all__ = ["User", "Competitor", "DataSource", "RawContent", "ScrapingSchedule"]
+__all__ = ["User", "Competitor", "DataSource", "RawContent", "ScrapingSchedule", "ProcessedInsights"]
