@@ -5,5 +5,6 @@ from .data_source import DataSource
 from .raw_content import RawContent
 from .scraping_schedule import ScrapingSchedule
 from .processed_insights import ProcessedInsights
+from .alert import Alert, Notification
 
-__all__ = ["User", "Competitor", "DataSource", "RawContent", "ScrapingSchedule", "ProcessedInsights"]
+__all__ = ["User", "Competitor", "DataSource", "RawContent", "ScrapingSchedule", "ProcessedInsights", "Alert", "Notification"]

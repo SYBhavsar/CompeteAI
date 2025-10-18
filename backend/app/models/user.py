@@ -16,5 +16,7 @@ class User(Base):
     created_at = Column(DateTime(timezone=True), server_default=func.now())
     updated_at = Column(DateTime(timezone=True), onupdate=func.now())
     
-    # Relationship
+    # Relationships
     competitors = relationship("Competitor", back_populates="user")
+    saved_searches = relationship("SavedSearch", back_populates="user")
+    search_history = relationship("SearchHistory", back_populates="user")

@@ -7,6 +7,7 @@ from app.models import User, Competitor, DataSource, RawContent, ProcessedInsigh
 from app.schemas.insights import ProcessedInsightsResponse
 from app.services.content_processing_service import ContentProcessingService
 from app.utils.dependencies import get_current_user
+from app.tasks.alert_tasks import process_insight_alerts
 
 router = APIRouter()
 
@@ -105,8 +106,12 @@ def process_raw_content(
     # Process content
     service = ContentProcessingService()
     result = service.process_raw_content(raw_content_id, db)
-    
+
     if not result:
         raise HTTPException(status_code=404, detail="Failed to process content")
-    
+
+    # Trigger alert processing asynchronously
+    competitor_id = raw_content.data_source.competitor_id
+    process_insight_alerts.delay(result.id, competitor_id)
+
     return result
