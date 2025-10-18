@@ -4,13 +4,15 @@ from sqlalchemy.orm import Session
 
 from app.models import RawContent, ProcessedInsights
 from app.services.openai_client import OpenAIClient
+from app.services.quality_scoring_service import QualityScoringService
 
 
 class ContentProcessingService:
     """Service for processing raw content into insights using AI"""
-    
+
     def __init__(self, openai_client: Optional[OpenAIClient] = None):
         self.openai_client = openai_client or OpenAIClient()
+        self.quality_scorer = QualityScoringService()
     
     def process_raw_content(self, raw_content_id: int, db: Session) -> Optional[ProcessedInsights]:
         """Process raw content and create insights"""
@@ -50,11 +52,17 @@ class ContentProcessingService:
                 sentiment=sentiment,
                 insights=insights
             )
-            
+
             db.add(processed_insights)
             db.commit()
             db.refresh(processed_insights)
-            
+
+            # Calculate and store quality score
+            quality_score = self.quality_scorer.calculate_quality_score(processed_insights)
+            processed_insights.quality_score = quality_score
+            db.commit()
+            db.refresh(processed_insights)
+
             return processed_insights
             
         except Exception:
