@@ -1,5 +1,6 @@
 from pydantic import BaseModel, Field
 from typing import List, Optional, Any, Dict
+from datetime import datetime
 
 
 class SemanticSearchRequest(BaseModel):
@@ -28,3 +29,55 @@ class TraditionalSearchResponse(BaseModel):
     keyword: str
     results: List[Dict[str, Any]]
     total: int
+
+
+class SavedSearchCreate(BaseModel):
+    """Schema for creating a saved search"""
+    name: str
+    search_type: str  # semantic or traditional
+    query: str
+    filters: Optional[Dict[str, Any]] = None
+
+
+class SavedSearchUpdate(BaseModel):
+    """Schema for updating a saved search"""
+    name: Optional[str] = None
+    query: Optional[str] = None
+    filters: Optional[Dict[str, Any]] = None
+
+
+class SavedSearchResponse(BaseModel):
+    """Schema for saved search response"""
+    id: int
+    user_id: int
+    name: str
+    search_type: str
+    query: str
+    filters: Optional[Dict[str, Any]]
+    created_at: datetime
+    updated_at: Optional[datetime]
+
+    class Config:
+        from_attributes = True
+
+
+class SearchHistoryCreate(BaseModel):
+    """Schema for creating search history entry"""
+    search_type: str
+    query: str
+    filters: Optional[Dict[str, Any]] = None
+    results_count: Optional[int] = None
+
+
+class SearchHistoryResponse(BaseModel):
+    """Schema for search history response"""
+    id: int
+    user_id: int
+    search_type: str
+    query: str
+    filters: Optional[Dict[str, Any]]
+    results_count: Optional[int]
+    executed_at: datetime
+
+    class Config:
+        from_attributes = True
