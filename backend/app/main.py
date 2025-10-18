@@ -7,6 +7,7 @@ from app.api.scraping import router as scraping_router
 from app.api.schedules import router as schedules_router
 from app.api.insights import router as insights_router
 from app.api.search import router as search_router
+from app.api.analytics import router as analytics_router
 
 app = FastAPI(
     title="AI Competitive Intelligence Platform",
@@ -21,6 +22,7 @@ app.include_router(scraping_router, prefix="/scraping", tags=["scraping"])
 app.include_router(schedules_router, prefix="/schedules", tags=["schedules"])
 app.include_router(insights_router, tags=["insights"])
 app.include_router(search_router, tags=["search"])
+app.include_router(analytics_router, tags=["analytics"])
 
 @app.get("/")
 async def root():
