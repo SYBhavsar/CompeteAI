@@ -41,18 +41,6 @@ describe('Header Component', () => {
     mockPush.mockClear()
   })
 
-  it('should display user name', () => {
-    const store = createTestStore()
-
-    render(
-      <Provider store={store}>
-        <Header />
-      </Provider>
-    )
-
-    expect(screen.getByText(/Welcome back, Test User/i)).toBeInTheDocument()
-  })
-
   it('should toggle user menu when clicking user icon', async () => {
     const user = userEvent.setup()
     const store = createTestStore()
@@ -109,5 +97,18 @@ describe('Header Component', () => {
     })
 
     removeTokenSpy.mockRestore()
+  })
+
+  it('should render a search bar', () => {
+    const store = createTestStore()
+
+    render(
+      <Provider store={store}>
+        <Header />
+      </Provider>
+    )
+
+    const searchInput = screen.getByPlaceholderText(/search.../i)
+    expect(searchInput).toBeInTheDocument()
   })
 })

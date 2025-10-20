@@ -4,7 +4,7 @@ import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { useAppDispatch, useAppSelector } from '@/lib/hooks'
 import { logout, selectUser } from '@/features/auth/authSlice'
-import { BellIcon, UserCircleIcon, ArrowRightOnRectangleIcon } from '@heroicons/react/24/outline'
+import { BellIcon, UserCircleIcon, ArrowRightOnRectangleIcon, MagnifyingGlassIcon } from '@heroicons/react/24/outline'
 import clsx from 'clsx'
 
 export default function Header() {
@@ -24,11 +24,20 @@ export default function Header() {
   return (
     <div className="flex h-16 flex-shrink-0 border-b border-border bg-surface">
       <div className="flex flex-1 justify-between px-6">
-        {/* Left side - could add breadcrumbs or search */}
+        {/* Left side - Search Bar */}
         <div className="flex flex-1 items-center">
-          <h2 className="text-lg font-semibold text-text-primary">
-            Welcome back, {user?.full_name}
-          </h2>
+          <div className="relative w-full max-w-xs">
+            <div className="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
+              <MagnifyingGlassIcon className="h-5 w-5 text-text-secondary" aria-hidden="true" />
+            </div>
+            <input
+              id="search"
+              name="search"
+              className="block w-full bg-background border border-border rounded-md py-2 pl-10 pr-3 text-sm placeholder-text-secondary focus:ring-primary focus:border-primary"
+              placeholder="Search..."
+              type="search"
+            />
+          </div>
         </div>
 
         {/* Right side - notifications and user menu */}

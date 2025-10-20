@@ -14,6 +14,9 @@ const registerSchema = z.object({
   email: z.string().email('Invalid email address'),
   password: z.string().min(6, 'Password must be at least 6 characters'),
   confirmPassword: z.string(),
+  terms: z.boolean().refine((val) => val === true, {
+    message: 'You must accept the terms and conditions',
+  }),
 }).refine((data) => data.password === data.confirmPassword, {
   message: 'Passwords must match',
   path: ['confirmPassword'],
@@ -49,10 +52,10 @@ export default function RegisterPage() {
    * Handle form submission
    */
   const onSubmit = async (data: RegisterFormData) => {
-    const { confirmPassword, ...registerData } = data
+    const { confirmPassword, terms, ...registerData } = data
     const result = await dispatch(registerAsync(registerData))
     if (registerAsync.fulfilled.match(result)) {
-      router.push('/dashboard')
+      router.push('/login')
     }
   }
 
@@ -146,6 +149,28 @@ export default function RegisterPage() {
             {errors.confirmPassword && (
               <p className="mt-1 text-sm text-error">{errors.confirmPassword.message}</p>
             )}
+          </div>
+
+          {/* Terms & Conditions */}
+          <div>
+            <div className="flex items-start">
+              <div className="flex items-center h-5">
+                <input
+                  id="terms"
+                  type="checkbox"
+                  {...register('terms')}
+                  className="h-4 w-4 rounded border-border text-primary focus:ring-primary"
+                />
+              </div>
+              <div className="ml-3 text-sm">
+                <label htmlFor="terms" className="text-text-secondary">
+                  I agree to the <a href="#" className="font-medium text-primary hover:text-primary/90">Terms of Service</a> and <a href="#" className="font-medium text-primary hover:text-primary/90">Privacy Policy</a>.
+                </label>
+                {errors.terms && (
+                  <p className="mt-1 text-sm text-error">{errors.terms.message}</p>
+                )}
+              </div>
+            </div>
           </div>
 
           {/* Submit Button */}

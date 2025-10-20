@@ -104,4 +104,16 @@ describe('Login Page - Integration Tests', () => {
     expect(state.auth.isAuthenticated).toBe(false)
     expect(mockPush).not.toHaveBeenCalled()
   })
+
+  it('should render "Remember me" checkbox and "Forgot password" link', () => {
+    const store = createTestStore()
+    render(
+      <Provider store={store}>
+        <LoginPage />
+      </Provider>
+    )
+
+    expect(screen.getByLabelText(/remember me/i)).toBeInTheDocument()
+    expect(screen.getByRole('link', { name: /forgot password?/i })).toBeInTheDocument()
+  })
 })

@@ -45,7 +45,6 @@ export const registerAsync = createAsyncThunk<AuthResponse, RegisterRequest>(
   async (data, { rejectWithValue }) => {
     try {
       const response = await authService.register(data)
-      authService.saveToken(response.access_token)
       return response
     } catch (error) {
       const axiosError = error as { response?: { data?: { detail?: string } } }
@@ -113,11 +112,8 @@ const authSlice = createSlice({
         state.loading = true
         state.error = null
       })
-      .addCase(registerAsync.fulfilled, (state, action: PayloadAction<AuthResponse>) => {
+      .addCase(registerAsync.fulfilled, (state) => {
         state.loading = false
-        state.isAuthenticated = true
-        state.user = action.payload.user
-        state.token = action.payload.access_token
         state.error = null
       })
       .addCase(registerAsync.rejected, (state, action) => {

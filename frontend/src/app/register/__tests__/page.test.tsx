@@ -58,23 +58,24 @@ describe('Register Page - Integration Tests', () => {
     const emailInput = screen.getByLabelText(/email/i)
     const passwordInput = screen.getByLabelText(/^password$/i)
     const confirmPasswordInput = screen.getByLabelText(/confirm password/i)
+    const termsCheckbox = screen.getByLabelText(/i agree to the/i)
     const submitButton = screen.getByRole('button', { name: /sign up|register/i })
 
     await user.type(nameInput, 'New User')
     await user.type(emailInput, 'newuser@example.com')
     await user.type(passwordInput, 'password123')
     await user.type(confirmPasswordInput, 'password123')
+    await user.click(termsCheckbox)
     await user.click(submitButton)
 
     // Wait for redirect
     await waitFor(() => {
-      expect(mockPush).toHaveBeenCalledWith('/dashboard')
+      expect(mockPush).toHaveBeenCalledWith('/login')
     })
 
-    // Verify user is authenticated in Redux
+    // Verify user is NOT authenticated in Redux yet (they need to login)
     const state = store.getState()
-    expect(state.auth.isAuthenticated).toBe(true)
-    expect(state.auth.user?.email).toBe('newuser@example.com')
+    expect(state.auth.isAuthenticated).toBe(false)
   })
 
   it('should display error when passwords do not match', async () => {
@@ -108,6 +109,39 @@ describe('Register Page - Integration Tests', () => {
     // Verify user is NOT authenticated
     const state = store.getState()
     expect(state.auth.isAuthenticated).toBe(false)
+    expect(mockPush).not.toHaveBeenCalled()
+  })
+
+  it('should render a "Terms & Conditions" checkbox and prevent submission if unchecked', async () => {
+    const user = userEvent.setup()
+    const store = createTestStore()
+
+    render(
+      <Provider store={store}>
+        <RegisterPage />
+      </Provider>
+    )
+
+    const termsCheckbox = screen.getByLabelText(/i agree to the/i)
+    expect(termsCheckbox).toBeInTheDocument()
+    expect(termsCheckbox).not.toBeChecked()
+
+    // Fill out the form but don't check the box
+    await user.type(screen.getByLabelText(/full name/i), 'Test User')
+    await user.type(screen.getByLabelText(/email/i), 'test@example.com')
+    await user.type(screen.getByLabelText(/^password$/i), 'password123')
+    await user.type(screen.getByLabelText(/confirm password/i), 'password123')
+
+    // Try to submit
+    const submitButton = screen.getByRole('button', { name: /sign up|register/i })
+    await user.click(submitButton)
+
+    // Expect validation error
+    await waitFor(() => {
+      expect(screen.getByText(/you must accept the terms and conditions/i)).toBeInTheDocument()
+    })
+
+    expect(mockApi.history.post.length).toBe(0)
     expect(mockPush).not.toHaveBeenCalled()
   })
 })
