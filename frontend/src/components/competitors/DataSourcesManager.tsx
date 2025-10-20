@@ -6,6 +6,16 @@ import { DataSource } from '@/types'
 import { PlusIcon, PencilIcon, TrashIcon } from '@heroicons/react/24/outline'
 import DataSourceModal from './DataSourceModal'
 import DeleteConfirmModal from './DeleteConfirmModal'
+import { Button } from '@/components/ui/button'
+import { Badge } from '@/components/ui/badge'
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from '@/components/ui/table'
 
 interface DataSourcesManagerProps {
   competitorId: number
@@ -115,89 +125,66 @@ export default function DataSourcesManager({ competitorId }: DataSourcesManagerP
       {/* Header */}
       <div className="flex items-center justify-between">
         <h3 className="text-lg font-medium text-text-primary">Data Sources</h3>
-        <button
-          type="button"
-          onClick={() => setIsAddModalOpen(true)}
-          className="inline-flex items-center px-3 py-2 border border-transparent rounded-md text-sm font-medium text-white bg-primary hover:bg-primary/90"
-        >
+        <Button onClick={() => setIsAddModalOpen(true)}>
           <PlusIcon className="h-4 w-4 mr-2" />
           Add Data Source
-        </button>
+        </Button>
       </div>
 
-      {/* Data Sources List */}
+      {/* Data Sources Table */}
       {dataSources.length === 0 ? (
         <div className="text-center py-12 bg-surface border border-border rounded-lg">
           <p className="text-text-secondary text-lg">No data sources found</p>
           <p className="text-text-secondary text-sm mt-2">
             Get started by adding your first data source
           </p>
-          <button
-            type="button"
-            onClick={() => setIsAddModalOpen(true)}
-            className="mt-4 inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-primary hover:bg-primary/90"
-          >
+          <Button onClick={() => setIsAddModalOpen(true)} className="mt-4">
             <PlusIcon className="h-5 w-5 mr-2" />
             Add Data Source
-          </button>
+          </Button>
         </div>
       ) : (
-        <div className="bg-surface border border-border rounded-lg divide-y divide-border">
-          {dataSources.map((dataSource) => (
-            <div key={dataSource.id} className="p-4 hover:bg-background transition-colors">
-              <div className="flex items-start justify-between">
-                <div className="flex-1">
-                  <div className="flex items-center space-x-2">
-                    <h4 className="text-sm font-medium text-text-primary">
-                      {dataSource.source_type}
-                    </h4>
-                    <span
-                      className={`text-xs px-2 py-1 rounded ${
-                        dataSource.is_active
-                          ? 'bg-success/10 text-success'
-                          : 'bg-error/10 text-error'
-                      }`}
-                    >
-                      {dataSource.is_active ? 'Active' : 'Inactive'}
-                    </span>
-                  </div>
-                  <p className="text-sm text-text-secondary mt-1">{dataSource.url}</p>
-                  {dataSource.last_scraped && (
-                    <p className="text-xs text-text-secondary mt-1">
-                      Last scraped: {new Date(dataSource.last_scraped).toLocaleString()}
-                    </p>
-                  )}
-                </div>
-                <div className="flex items-center space-x-2 ml-4">
-                  <button
-                    type="button"
+        <Table>
+          <TableHeader>
+            <TableRow>
+              <TableHead>Source Type</TableHead>
+              <TableHead>URL</TableHead>
+              <TableHead>Status</TableHead>
+              <TableHead>Last Scraped</TableHead>
+              <TableHead className="text-right">Actions</TableHead>
+            </TableRow>
+          </TableHeader>
+          <TableBody>
+            {dataSources.map((dataSource) => (
+              <TableRow key={dataSource.id}>
+                <TableCell className="font-medium">{dataSource.source_type}</TableCell>
+                <TableCell>{dataSource.url}</TableCell>
+                <TableCell>
+                  <Badge variant={dataSource.is_active ? 'success' : 'destructive'}>
+                    {dataSource.is_active ? 'Active' : 'Inactive'}
+                  </Badge>
+                </TableCell>
+                <TableCell>{dataSource.last_scraped ? new Date(dataSource.last_scraped).toLocaleString() : 'Never'}</TableCell>
+                <TableCell className="text-right">
+                  <Button
+                    variant="ghost"
+                    size="sm"
                     onClick={() => handleToggleActive(dataSource)}
-                    className="text-sm text-primary hover:text-primary/90"
                     aria-label="Toggle"
                   >
                     Toggle
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => setEditingDataSource(dataSource)}
-                    className="text-primary hover:text-primary/90"
-                    aria-label="Edit"
-                  >
+                  </Button>
+                  <Button variant="ghost" size="icon" onClick={() => setEditingDataSource(dataSource)} aria-label="Edit">
                     <PencilIcon className="h-4 w-4" />
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => setDeleteConfirmId(dataSource.id)}
-                    className="text-error hover:text-error/90"
-                    aria-label="Delete"
-                  >
+                  </Button>
+                  <Button variant="ghost" size="icon" onClick={() => setDeleteConfirmId(dataSource.id)} aria-label="Delete">
                     <TrashIcon className="h-4 w-4" />
-                  </button>
-                </div>
-              </div>
-            </div>
-          ))}
-        </div>
+                  </Button>
+                </TableCell>
+              </TableRow>
+            ))}
+          </TableBody>
+        </Table>
       )}
 
       {/* Add Data Source Modal */}

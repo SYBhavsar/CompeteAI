@@ -1,8 +1,16 @@
 'use client'
 
+import React from 'react'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
-import { ChevronRightIcon } from '@heroicons/react/24/outline'
+import {
+  Breadcrumb,
+  BreadcrumbItem,
+  BreadcrumbLink,
+  BreadcrumbList,
+  BreadcrumbPage,
+  BreadcrumbSeparator,
+} from '@/components/ui/breadcrumb'
 
 /**
  * Breadcrumbs component
@@ -41,27 +49,23 @@ export default function Breadcrumbs() {
   }
 
   return (
-    <nav aria-label="Breadcrumb" className="flex items-center space-x-2 text-sm">
-      {breadcrumbs.map((crumb, index) => (
-        <div key={crumb.href} className="flex items-center">
-          {/* Separator */}
-          {index > 0 && (
-            <ChevronRightIcon className="h-4 w-4 text-text-secondary mx-2" />
-          )}
-
-          {/* Breadcrumb Item */}
-          {crumb.isLast ? (
-            <span className="text-text-primary font-medium">{crumb.label}</span>
-          ) : (
-            <Link
-              href={crumb.href}
-              className="text-text-secondary hover:text-text-primary transition-colors"
-            >
-              {crumb.label}
-            </Link>
-          )}
-        </div>
-      ))}
-    </nav>
+    <Breadcrumb>
+      <BreadcrumbList>
+        {breadcrumbs.map((crumb, index) => (
+          <React.Fragment key={crumb.href}>
+            <BreadcrumbItem>
+              {crumb.isLast ? (
+                <BreadcrumbPage>{crumb.label}</BreadcrumbPage>
+              ) : (
+                <BreadcrumbLink asChild>
+                  <Link href={crumb.href}>{crumb.label}</Link>
+                </BreadcrumbLink>
+              )}
+            </BreadcrumbItem>
+            {index < breadcrumbs.length - 1 && <BreadcrumbSeparator />}
+          </React.Fragment>
+        ))}
+      </BreadcrumbList>
+    </Breadcrumb>
   )
 }

@@ -4,8 +4,20 @@ import { useEffect } from 'react'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
-import { XMarkIcon } from '@heroicons/react/24/outline'
 import { DataSource } from '@/types'
+import { Button } from '@/components/ui/button'
+import { Input } from '@/components/ui/input'
+import { Label } from '@/components/ui/label'
+import { Checkbox } from '@/components/ui/checkbox'
+
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog'
 
 /**
  * Form validation schema
@@ -76,100 +88,45 @@ export default function DataSourceModal({
   if (!isOpen) return null
 
   return (
-    <div className="fixed inset-0 z-50 overflow-y-auto">
-      {/* Backdrop */}
-      <div className="fixed inset-0 bg-black/50" onClick={onClose} />
-
-      {/* Modal */}
-      <div className="flex min-h-full items-center justify-center p-4">
-        <div
-          className="relative bg-surface rounded-lg shadow-xl max-w-md w-full p-6"
-          role="dialog"
-          aria-modal="true"
-        >
-          {/* Close button */}
-          <button
-            type="button"
-            onClick={onClose}
-            className="absolute top-4 right-4 text-text-secondary hover:text-text-primary"
-          >
-            <XMarkIcon className="h-6 w-6" />
-          </button>
-
-          {/* Header */}
-          <h2 className="text-xl font-bold text-text-primary mb-4">
-            {dataSource ? 'Edit Data Source' : 'Add Data Source'}
-          </h2>
-
-          {/* Form */}
-          <form onSubmit={handleSubmit(handleFormSubmit)} className="space-y-4">
-            {/* Source Type */}
-            <div>
-              <label htmlFor="source_type" className="block text-sm font-medium text-text-primary mb-1">
+    <Dialog open={isOpen} onOpenChange={onClose}>
+      <DialogContent className="sm:max-w-[425px]">
+        <DialogHeader>
+          <DialogTitle>{dataSource ? 'Edit Data Source' : 'Add Data Source'}</DialogTitle>
+          <DialogDescription>
+            {dataSource ? 'Update the details of your data source.' : 'Add a new data source to track.'}
+          </DialogDescription>
+        </DialogHeader>
+        <form onSubmit={handleSubmit(handleFormSubmit)} className="space-y-4">
+          <div className="grid gap-4 py-4">
+            <div className="grid grid-cols-4 items-center gap-4">
+              <Label htmlFor="source_type" className="text-right">
                 Source Type <span className="text-error">*</span>
-              </label>
-              <input
-                id="source_type"
-                type="text"
-                {...register('source_type')}
-                className="w-full px-3 py-2 border border-border rounded-md bg-background text-text-primary focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
-                placeholder="e.g., website, twitter, linkedin"
-              />
-              {errors.source_type && (
-                <p className="mt-1 text-sm text-error">{errors.source_type.message}</p>
-              )}
+              </Label>
+              <Input id="source_type" {...register('source_type')} className="col-span-3" placeholder="e.g., website, twitter, linkedin" />
+              {errors.source_type && <p className="col-span-4 text-sm text-error">{errors.source_type.message}</p>}
             </div>
-
-            {/* URL */}
-            <div>
-              <label htmlFor="url" className="block text-sm font-medium text-text-primary mb-1">
+            <div className="grid grid-cols-4 items-center gap-4">
+              <Label htmlFor="url" className="text-right">
                 URL <span className="text-error">*</span>
-              </label>
-              <input
-                id="url"
-                type="text"
-                {...register('url')}
-                className="w-full px-3 py-2 border border-border rounded-md bg-background text-text-primary focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
-                placeholder="https://example.com"
-              />
-              {errors.url && (
-                <p className="mt-1 text-sm text-error">{errors.url.message}</p>
-              )}
+              </Label>
+              <Input id="url" {...register('url')} className="col-span-3" placeholder="https://example.com" />
+              {errors.url && <p className="col-span-4 text-sm text-error">{errors.url.message}</p>}
             </div>
-
-            {/* Active Status */}
-            <div className="flex items-center">
-              <input
-                id="is_active"
-                type="checkbox"
-                {...register('is_active')}
-                className="h-4 w-4 text-primary focus:ring-primary border-border rounded"
-              />
-              <label htmlFor="is_active" className="ml-2 block text-sm text-text-primary">
+            <div className="grid grid-cols-4 items-center gap-4">
+              <Label htmlFor="is_active" className="text-right">
                 Active
-              </label>
+              </Label>
+              <Checkbox id="is_active" {...register('is_active')} />
             </div>
-
-            {/* Actions */}
-            <div className="flex justify-end space-x-3 mt-6">
-              <button
-                type="button"
-                onClick={onClose}
-                className="px-4 py-2 text-sm font-medium text-text-primary bg-background border border-border rounded-md hover:bg-surface focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary"
-              >
-                Cancel
-              </button>
-              <button
-                type="submit"
-                disabled={isSubmitting}
-                className="px-4 py-2 text-sm font-medium text-white bg-primary rounded-md hover:bg-primary/90 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary disabled:opacity-50 disabled:cursor-not-allowed"
-              >
-                {isSubmitting ? 'Saving...' : dataSource ? 'Update' : 'Create'}
-              </button>
-            </div>
-          </form>
-        </div>
-      </div>
-    </div>
+          </div>
+          <DialogFooter>
+            <Button type="button" variant="outline" onClick={onClose}>Cancel</Button>
+            <Button type="submit" disabled={isSubmitting}>
+              {isSubmitting ? 'Saving...' : dataSource ? 'Update' : 'Create'}
+            </Button>
+          </DialogFooter>
+        </form>
+      </DialogContent>
+    </Dialog>
   )
 }

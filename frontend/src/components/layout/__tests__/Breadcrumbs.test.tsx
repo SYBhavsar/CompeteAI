@@ -15,7 +15,9 @@ describe('Breadcrumbs Component', () => {
     render(<Breadcrumbs />)
 
     expect(screen.getByText('Dashboard')).toBeInTheDocument()
-    expect(screen.queryByRole('link')).not.toBeInTheDocument() // No links on root
+    // Current page should not be a clickable link (no href attribute)
+    const dashboardElement = screen.getByText('Dashboard')
+    expect(dashboardElement.closest('a')).not.toBeInTheDocument()
   })
 
   it('should render breadcrumb trail for nested routes', () => {

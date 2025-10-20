@@ -6,8 +6,18 @@ import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
 import { useAppDispatch } from '@/lib/hooks'
 import { createCompetitorAsync, updateCompetitorAsync } from '@/features/competitors/competitorsSlice'
-import { XMarkIcon } from '@heroicons/react/24/outline'
 import { Competitor } from '@/types'
+import { Button } from '@/components/ui/button'
+import { Input } from '@/components/ui/input'
+import { Label } from '@/components/ui/label'
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog'
 
 /**
  * Form validation schema
@@ -104,104 +114,46 @@ export default function CompetitorModal({
   if (!isOpen) return null
 
   return (
-    <div className="fixed inset-0 z-50 overflow-y-auto">
-      {/* Backdrop */}
-      <div className="fixed inset-0 bg-black/50" onClick={onClose} />
-
-      {/* Modal */}
-      <div className="flex min-h-full items-center justify-center p-4">
-        <div
-          className="relative bg-surface rounded-lg shadow-xl max-w-md w-full p-6"
-          role="dialog"
-          aria-modal="true"
-        >
-          {/* Close button */}
-          <button
-            type="button"
-            onClick={onClose}
-            className="absolute top-4 right-4 text-text-secondary hover:text-text-primary"
-          >
-            <XMarkIcon className="h-6 w-6" />
-          </button>
-
-          {/* Header */}
-          <h2 className="text-xl font-bold text-text-primary mb-4">
-            {competitor ? 'Edit Competitor' : 'Add Competitor'}
-          </h2>
-
-          {/* Form */}
-          <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
-            {/* Name */}
-            <div>
-              <label htmlFor="name" className="block text-sm font-medium text-text-primary mb-1">
+    <Dialog open={isOpen} onOpenChange={onClose}>
+      <DialogContent className="sm:max-w-[425px]">
+        <DialogHeader>
+          <DialogTitle>{competitor ? 'Edit Competitor' : 'Add Competitor'}</DialogTitle>
+          <DialogDescription>
+            {competitor ? 'Update the details of your competitor.' : 'Add a new competitor to track.'}
+          </DialogDescription>
+        </DialogHeader>
+        <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
+          <div className="grid gap-4 py-4">
+            <div className="grid grid-cols-4 items-center gap-4">
+              <Label htmlFor="name" className="text-right">
                 Name <span className="text-error">*</span>
-              </label>
-              <input
-                id="name"
-                type="text"
-                {...register('name')}
-                className="w-full px-3 py-2 border border-border rounded-md bg-background text-text-primary focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
-                placeholder="Enter competitor name"
-              />
-              {errors.name && (
-                <p className="mt-1 text-sm text-error">{errors.name.message}</p>
-              )}
+              </Label>
+              <Input id="name" {...register('name')} className="col-span-3" placeholder="Enter competitor name" />
+              {errors.name && <p className="col-span-4 text-sm text-error">{errors.name.message}</p>}
             </div>
-
-            {/* Domain */}
-            <div>
-              <label htmlFor="domain" className="block text-sm font-medium text-text-primary mb-1">
+            <div className="grid grid-cols-4 items-center gap-4">
+              <Label htmlFor="domain" className="text-right">
                 Domain
-              </label>
-              <input
-                id="domain"
-                type="text"
-                {...register('domain')}
-                className="w-full px-3 py-2 border border-border rounded-md bg-background text-text-primary focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
-                placeholder="https://example.com"
-              />
-              {errors.domain && (
-                <p className="mt-1 text-sm text-error">{errors.domain.message}</p>
-              )}
+              </Label>
+              <Input id="domain" {...register('domain')} className="col-span-3" placeholder="https://example.com" />
+              {errors.domain && <p className="col-span-4 text-sm text-error">{errors.domain.message}</p>}
             </div>
-
-            {/* Industry */}
-            <div>
-              <label htmlFor="industry" className="block text-sm font-medium text-text-primary mb-1">
+            <div className="grid grid-cols-4 items-center gap-4">
+              <Label htmlFor="industry" className="text-right">
                 Industry
-              </label>
-              <input
-                id="industry"
-                type="text"
-                {...register('industry')}
-                className="w-full px-3 py-2 border border-border rounded-md bg-background text-text-primary focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
-                placeholder="e.g., Technology, Finance"
-              />
-              {errors.industry && (
-                <p className="mt-1 text-sm text-error">{errors.industry.message}</p>
-              )}
+              </Label>
+              <Input id="industry" {...register('industry')} className="col-span-3" placeholder="e.g., Technology, Finance" />
+              {errors.industry && <p className="col-span-4 text-sm text-error">{errors.industry.message}</p>}
             </div>
-
-            {/* Actions */}
-            <div className="flex justify-end space-x-3 mt-6">
-              <button
-                type="button"
-                onClick={onClose}
-                className="px-4 py-2 text-sm font-medium text-text-primary bg-background border border-border rounded-md hover:bg-surface focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary"
-              >
-                Cancel
-              </button>
-              <button
-                type="submit"
-                disabled={isSubmitting}
-                className="px-4 py-2 text-sm font-medium text-white bg-primary rounded-md hover:bg-primary/90 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary disabled:opacity-50 disabled:cursor-not-allowed"
-              >
-                {isSubmitting ? 'Saving...' : competitor ? 'Update' : 'Create'}
-              </button>
-            </div>
-          </form>
-        </div>
-      </div>
-    </div>
+          </div>
+          <DialogFooter>
+            <Button type="button" variant="outline" onClick={onClose}>Cancel</Button>
+            <Button type="submit" disabled={isSubmitting}>
+              {isSubmitting ? 'Saving...' : competitor ? 'Update' : 'Create'}
+            </Button>
+          </DialogFooter>
+        </form>
+      </DialogContent>
+    </Dialog>
   )
 }
