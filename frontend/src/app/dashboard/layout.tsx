@@ -1,6 +1,7 @@
 import ProtectedRoute from '@/components/auth/ProtectedRoute'
 import Sidebar from '@/components/layout/Sidebar'
 import Header from '@/components/layout/Header'
+import Breadcrumbs from '@/components/layout/Breadcrumbs'
 
 export default function DashboardLayout({
   children,
@@ -21,6 +22,9 @@ export default function DashboardLayout({
           {/* Page content */}
           <main className="flex-1 overflow-y-auto">
             <div className="py-6 px-6">
+              {/* Breadcrumb navigation */}
+              <Breadcrumbs />
+
               {children}
             </div>
           </main>

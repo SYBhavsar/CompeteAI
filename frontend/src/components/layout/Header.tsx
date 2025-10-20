@@ -4,8 +4,9 @@ import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { useAppDispatch, useAppSelector } from '@/lib/hooks'
 import { logout, selectUser } from '@/features/auth/authSlice'
-import { BellIcon, UserCircleIcon, ArrowRightOnRectangleIcon, MagnifyingGlassIcon } from '@heroicons/react/24/outline'
+import { UserCircleIcon, ArrowRightOnRectangleIcon, MagnifyingGlassIcon } from '@heroicons/react/24/outline'
 import clsx from 'clsx'
+import NotificationDropdown from './NotificationDropdown'
 
 export default function Header() {
   const router = useRouter()
@@ -43,13 +44,7 @@ export default function Header() {
         {/* Right side - notifications and user menu */}
         <div className="flex items-center gap-4">
           {/* Notifications */}
-          <button
-            type="button"
-            className="rounded-full p-2 text-text-secondary hover:bg-background hover:text-text-primary transition-colors"
-            aria-label="View notifications"
-          >
-            <BellIcon className="h-6 w-6" />
-          </button>
+          <NotificationDropdown />
 
           {/* User menu */}
           <div className="relative">
