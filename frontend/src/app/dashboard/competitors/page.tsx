@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useMemo } from 'react'
 import { useRouter } from 'next/navigation'
 import { useAppDispatch, useAppSelector } from '@/lib/hooks'
 import {
@@ -15,6 +15,7 @@ import { format } from 'date-fns'
 import CompetitorModal from '@/components/competitors/CompetitorModal'
 import DeleteConfirmModal from '@/components/competitors/DeleteConfirmModal'
 import { Button } from '@/components/ui/button'
+import { Input } from '@/components/ui/input'
 import {
   Card,
   CardContent,
@@ -31,6 +32,8 @@ import {
   TableRow,
 } from '@/components/ui/table'
 
+const ITEMS_PER_PAGE = 10
+
 /**
  * Competitors list page
  * Displays all competitors in a table with actions
@@ -45,13 +48,36 @@ export default function CompetitorsPage() {
 
   const [isAddModalOpen, setIsAddModalOpen] = useState(false)
   const [deleteConfirmId, setDeleteConfirmId] = useState<number | null>(null)
+  const [searchQuery, setSearchQuery] = useState('')
+  const [currentPage, setCurrentPage] = useState(1)
 
-  /**
-   * Fetch competitors on mount
-   */
   useEffect(() => {
     dispatch(fetchCompetitorsAsync())
   }, [dispatch])
+
+  const filteredCompetitors = useMemo(() => {
+    if (!searchQuery.trim()) return competitors
+
+    const query = searchQuery.toLowerCase()
+    return competitors.filter(
+      (competitor) =>
+        competitor.name.toLowerCase().includes(query) ||
+        competitor.domain?.toLowerCase().includes(query) ||
+        competitor.industry?.toLowerCase().includes(query)
+    )
+  }, [competitors, searchQuery])
+
+  const paginatedCompetitors = useMemo(() => {
+    const startIndex = (currentPage - 1) * ITEMS_PER_PAGE
+    const endIndex = startIndex + ITEMS_PER_PAGE
+    return filteredCompetitors.slice(startIndex, endIndex)
+  }, [filteredCompetitors, currentPage])
+
+  const totalPages = Math.ceil(filteredCompetitors.length / ITEMS_PER_PAGE)
+
+  useEffect(() => {
+    setCurrentPage(1)
+  }, [searchQuery])
 
   /**
    * Handle view competitor details
@@ -96,7 +122,6 @@ export default function CompetitorsPage() {
 
   return (
     <div className="space-y-6">
-      {/* Header */}
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-2xl font-bold text-text-primary">Competitors</h1>
@@ -110,7 +135,18 @@ export default function CompetitorsPage() {
         </Button>
       </div>
 
-      {/* Competitors Table */}
+      {competitors.length > 0 && (
+        <div className="flex items-center gap-4">
+          <Input
+            type="text"
+            placeholder="Search competitors..."
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            className="max-w-sm"
+          />
+        </div>
+      )}
+
       {competitors.length === 0 ? (
         <Card className="text-center py-12">
           <CardHeader>
@@ -126,40 +162,77 @@ export default function CompetitorsPage() {
             </Button>
           </CardContent>
         </Card>
+      ) : filteredCompetitors.length === 0 ? (
+        <Card className="text-center py-12">
+          <CardHeader>
+            <CardTitle className="text-lg">No results found</CardTitle>
+            <CardDescription className="mt-2 text-sm text-text-secondary">
+              Try adjusting your search query
+            </CardDescription>
+          </CardHeader>
+        </Card>
       ) : (
-        <div className="rounded-lg border">
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>Name</TableHead>
-                <TableHead>Domain</TableHead>
-                <TableHead>Industry</TableHead>
-                <TableHead>Created</TableHead>
-                <TableHead className="text-right">Actions</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {competitors.map((competitor) => (
-                <TableRow key={competitor.id} className="hover:bg-background/50">
-                  <TableCell className="font-medium">
-                    {competitor.name}
-                  </TableCell>
-                  <TableCell>{competitor.domain || '-'}</TableCell>
-                  <TableCell>{competitor.industry || '-'}</TableCell>
-                  <TableCell>{format(new Date(competitor.created_at), 'MMM d, yyyy')}</TableCell>
-                  <TableCell className="text-right">
-                    <Button variant="ghost" size="icon" onClick={() => handleView(competitor.id)} aria-label="View">
-                      <EyeIcon className="h-5 w-5" />
-                    </Button>
-                    <Button variant="ghost" size="icon" onClick={() => setDeleteConfirmId(competitor.id)} aria-label="Delete">
-                      <TrashIcon className="h-5 w-5" />
-                    </Button>
-                  </TableCell>
+        <>
+          <div className="rounded-lg border">
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>Name</TableHead>
+                  <TableHead>Domain</TableHead>
+                  <TableHead>Industry</TableHead>
+                  <TableHead>Created</TableHead>
+                  <TableHead className="text-right">Actions</TableHead>
                 </TableRow>
-              ))}
-            </TableBody>
-          </Table>
-        </div>
+              </TableHeader>
+              <TableBody>
+                {paginatedCompetitors.map((competitor) => (
+                  <TableRow key={competitor.id} className="hover:bg-background/50">
+                    <TableCell className="font-medium">
+                      {competitor.name}
+                    </TableCell>
+                    <TableCell>{competitor.domain || '-'}</TableCell>
+                    <TableCell>{competitor.industry || '-'}</TableCell>
+                    <TableCell>{format(new Date(competitor.created_at), 'MMM d, yyyy')}</TableCell>
+                    <TableCell className="text-right">
+                      <Button variant="ghost" size="icon" onClick={() => handleView(competitor.id)} aria-label="View">
+                        <EyeIcon className="h-5 w-5" />
+                      </Button>
+                      <Button variant="ghost" size="icon" onClick={() => setDeleteConfirmId(competitor.id)} aria-label="Delete">
+                        <TrashIcon className="h-5 w-5" />
+                      </Button>
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          </div>
+
+          {totalPages > 1 && (
+            <div className="flex items-center justify-between">
+              <p className="text-sm text-text-secondary">
+                Showing {(currentPage - 1) * ITEMS_PER_PAGE + 1} to{' '}
+                {Math.min(currentPage * ITEMS_PER_PAGE, filteredCompetitors.length)} of{' '}
+                {filteredCompetitors.length} results
+              </p>
+              <div className="flex gap-2">
+                <Button
+                  variant="outline"
+                  onClick={() => setCurrentPage((prev) => Math.max(1, prev - 1))}
+                  disabled={currentPage === 1}
+                >
+                  Previous
+                </Button>
+                <Button
+                  variant="outline"
+                  onClick={() => setCurrentPage((prev) => Math.min(totalPages, prev + 1))}
+                  disabled={currentPage === totalPages}
+                >
+                  Next
+                </Button>
+              </div>
+            </div>
+          )}
+        </>
       )}
 
       {/* Add Competitor Modal */}

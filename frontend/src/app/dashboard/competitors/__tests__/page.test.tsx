@@ -256,4 +256,166 @@ describe('Competitors List Page', () => {
       expect(screen.getByText(/error/i)).toBeInTheDocument()
     })
   })
+
+  it('should filter competitors by search input and display only matching results', async () => {
+    const mockCompetitors = [
+      {
+        id: 1,
+        name: 'TechCorp',
+        domain: 'techcorp.com',
+        industry: 'Technology',
+        user_id: 1,
+        created_at: '2024-01-01T00:00:00Z',
+        updated_at: '2024-01-01T00:00:00Z',
+      },
+      {
+        id: 2,
+        name: 'FinanceHub',
+        domain: 'financehub.com',
+        industry: 'Finance',
+        user_id: 1,
+        created_at: '2024-01-02T00:00:00Z',
+        updated_at: '2024-01-02T00:00:00Z',
+      },
+      {
+        id: 3,
+        name: 'TechStart',
+        domain: 'techstart.io',
+        industry: 'Technology',
+        user_id: 1,
+        created_at: '2024-01-03T00:00:00Z',
+        updated_at: '2024-01-03T00:00:00Z',
+      },
+    ]
+
+    mockApi.onGet('/competitors').reply(200, mockCompetitors)
+
+    const store = createTestStore()
+    const user = userEvent.setup()
+
+    render(
+      <Provider store={store}>
+        <CompetitorsPage />
+      </Provider>
+    )
+
+    await waitFor(() => {
+      expect(screen.getByText('TechCorp')).toBeInTheDocument()
+    })
+
+    expect(screen.getByText('FinanceHub')).toBeInTheDocument()
+    expect(screen.getByText('TechStart')).toBeInTheDocument()
+
+    const searchInput = screen.getByPlaceholderText(/search competitors/i)
+    await user.type(searchInput, 'Tech')
+
+    await waitFor(() => {
+      expect(screen.getByText('TechCorp')).toBeInTheDocument()
+      expect(screen.getByText('TechStart')).toBeInTheDocument()
+      expect(screen.queryByText('FinanceHub')).not.toBeInTheDocument()
+    })
+
+    await user.clear(searchInput)
+    await user.type(searchInput, 'Finance')
+
+    await waitFor(() => {
+      expect(screen.getByText('FinanceHub')).toBeInTheDocument()
+      expect(screen.queryByText('TechCorp')).not.toBeInTheDocument()
+      expect(screen.queryByText('TechStart')).not.toBeInTheDocument()
+    })
+  })
+
+  it('should handle pagination when competitors exceed page limit', async () => {
+    const mockCompetitors = Array.from({ length: 25 }, (_, i) => ({
+      id: i + 1,
+      name: `Competitor ${i + 1}`,
+      domain: `competitor${i + 1}.com`,
+      industry: 'Technology',
+      user_id: 1,
+      created_at: '2024-01-01T00:00:00Z',
+      updated_at: '2024-01-01T00:00:00Z',
+    }))
+
+    mockApi.onGet('/competitors').reply(200, mockCompetitors)
+
+    const store = createTestStore()
+    const user = userEvent.setup()
+
+    render(
+      <Provider store={store}>
+        <CompetitorsPage />
+      </Provider>
+    )
+
+    await waitFor(() => {
+      expect(screen.getByText('Competitor 1')).toBeInTheDocument()
+    })
+
+    expect(screen.getByText('Competitor 10')).toBeInTheDocument()
+    expect(screen.queryByText('Competitor 11')).not.toBeInTheDocument()
+
+    const nextButton = screen.getByRole('button', { name: /next/i })
+    await user.click(nextButton)
+
+    await waitFor(() => {
+      expect(screen.getByText('Competitor 11')).toBeInTheDocument()
+    })
+
+    expect(screen.getByText('Competitor 20')).toBeInTheDocument()
+    expect(screen.queryByText('Competitor 1')).not.toBeInTheDocument()
+
+    const prevButton = screen.getByRole('button', { name: /previous/i })
+    await user.click(prevButton)
+
+    await waitFor(() => {
+      expect(screen.getByText('Competitor 1')).toBeInTheDocument()
+    })
+  })
+
+  it('should combine search and pagination correctly', async () => {
+    const mockCompetitors = Array.from({ length: 25 }, (_, i) => ({
+      id: i + 1,
+      name: i % 2 === 0 ? `TechCorp ${i + 1}` : `FinanceHub ${i + 1}`,
+      domain: `company${i + 1}.com`,
+      industry: i % 2 === 0 ? 'Technology' : 'Finance',
+      user_id: 1,
+      created_at: '2024-01-01T00:00:00Z',
+      updated_at: '2024-01-01T00:00:00Z',
+    }))
+
+    mockApi.onGet('/competitors').reply(200, mockCompetitors)
+
+    const store = createTestStore()
+    const user = userEvent.setup()
+
+    render(
+      <Provider store={store}>
+        <CompetitorsPage />
+      </Provider>
+    )
+
+    await waitFor(() => {
+      expect(screen.getByText('TechCorp 1')).toBeInTheDocument()
+    })
+
+    const searchInput = screen.getByPlaceholderText(/search competitors/i)
+    await user.type(searchInput, 'Tech')
+
+    await waitFor(() => {
+      expect(screen.getByText('TechCorp 1')).toBeInTheDocument()
+      expect(screen.queryByText('FinanceHub 2')).not.toBeInTheDocument()
+    })
+
+    expect(screen.getByText('TechCorp 19')).toBeInTheDocument()
+    expect(screen.queryByText('TechCorp 21')).not.toBeInTheDocument()
+
+    const nextButton = screen.getByRole('button', { name: /next/i })
+    await user.click(nextButton)
+
+    await waitFor(() => {
+      expect(screen.getByText('TechCorp 21')).toBeInTheDocument()
+    })
+
+    expect(screen.queryByText('TechCorp 1')).not.toBeInTheDocument()
+  })
 })

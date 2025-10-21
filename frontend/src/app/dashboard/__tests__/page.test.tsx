@@ -1,4 +1,5 @@
 import { render, screen, waitFor } from '@testing-library/react'
+import userEvent from '@testing-library/user-event'
 import { Provider } from 'react-redux'
 import { configureStore } from '@reduxjs/toolkit'
 import authReducer from '@/features/auth/authSlice'
@@ -48,6 +49,8 @@ describe('Dashboard Page - Integration Tests', () => {
   it('should display welcome message with user name', async () => {
     const store = createTestStore()
 
+    mockApi.onGet('/competitors').reply(200, [])
+
     render(
       <Provider store={store}>
         <DashboardPage />
@@ -57,8 +60,10 @@ describe('Dashboard Page - Integration Tests', () => {
     expect(screen.getByText(/welcome back, test user/i)).toBeInTheDocument()
   })
 
-  it('should display all metric cards with loading state initially', () => {
+  it('should display all metric cards with loading state initially', async () => {
     const store = createTestStore()
+
+    mockApi.onGet('/competitors').reply(200, [])
 
     render(
       <Provider store={store}>
@@ -66,7 +71,10 @@ describe('Dashboard Page - Integration Tests', () => {
       </Provider>
     )
 
-    expect(screen.getByText('Total Competitors')).toBeInTheDocument()
+    await waitFor(() => {
+      expect(screen.getByText('Total Competitors')).toBeInTheDocument()
+    })
+
     expect(screen.getByText('Total Insights')).toBeInTheDocument()
     expect(screen.getByText('Recent Alerts')).toBeInTheDocument()
     expect(screen.getByText('Searches')).toBeInTheDocument()
@@ -96,7 +104,7 @@ describe('Dashboard Page - Integration Tests', () => {
       },
     ]
 
-    mockApi.onGet('/competitors/').reply(200, mockCompetitors)
+    mockApi.onGet('/competitors').reply(200, mockCompetitors)
 
     render(
       <Provider store={store}>
@@ -105,12 +113,15 @@ describe('Dashboard Page - Integration Tests', () => {
     )
 
     await waitFor(() => {
-      expect(screen.getByText('2')).toBeInTheDocument()
+      const competitorMetric = screen.getByText('Total Competitors').closest('[role="article"]')
+      expect(competitorMetric).toHaveTextContent('2')
     })
   })
 
-  it('should display quick action buttons', () => {
+  it('should display quick action buttons', async () => {
     const store = createTestStore()
+
+    mockApi.onGet('/competitors').reply(200, [])
 
     render(
       <Provider store={store}>
@@ -118,12 +129,18 @@ describe('Dashboard Page - Integration Tests', () => {
       </Provider>
     )
 
-    expect(screen.getByRole('button', { name: /add competitor/i })).toBeInTheDocument()
+    await waitFor(() => {
+      expect(screen.getByRole('button', { name: /add competitor/i })).toBeInTheDocument()
+    })
+
     expect(screen.getByRole('button', { name: /new search/i })).toBeInTheDocument()
   })
 
   it('should navigate to competitors page when Add Competitor clicked', async () => {
     const store = createTestStore()
+    const user = userEvent.setup()
+
+    mockApi.onGet('/competitors').reply(200, [])
 
     render(
       <Provider store={store}>
@@ -132,7 +149,7 @@ describe('Dashboard Page - Integration Tests', () => {
     )
 
     const addButton = screen.getByRole('button', { name: /add competitor/i })
-    addButton.click()
+    await user.click(addButton)
 
     await waitFor(() => {
       expect(mockPush).toHaveBeenCalledWith('/dashboard/competitors')
@@ -141,6 +158,9 @@ describe('Dashboard Page - Integration Tests', () => {
 
   it('should navigate to search page when New Search clicked', async () => {
     const store = createTestStore()
+    const user = userEvent.setup()
+
+    mockApi.onGet('/competitors').reply(200, [])
 
     render(
       <Provider store={store}>
@@ -149,29 +169,17 @@ describe('Dashboard Page - Integration Tests', () => {
     )
 
     const searchButton = screen.getByRole('button', { name: /new search/i })
-    searchButton.click()
+    await user.click(searchButton)
 
     await waitFor(() => {
       expect(mockPush).toHaveBeenCalledWith('/dashboard/search')
     })
   })
 
-  it('should display recent activity section', () => {
+  it('should display recent activity section', async () => {
     const store = createTestStore()
 
-    render(
-      <Provider store={store}>
-        <DashboardPage />
-      </Provider>
-    )
-
-    expect(screen.getByText(/recent activity/i)).toBeInTheDocument()
-  })
-
-  it('should handle API error gracefully', async () => {
-    const store = createTestStore()
-
-    mockApi.onGet('/competitors/').reply(500, { detail: 'Server error' })
+    mockApi.onGet('/competitors').reply(200, [])
 
     render(
       <Provider store={store}>
@@ -180,7 +188,25 @@ describe('Dashboard Page - Integration Tests', () => {
     )
 
     await waitFor(() => {
-      expect(screen.getByText('0')).toBeInTheDocument()
+      const activitySections = screen.getAllByText(/recent activity/i)
+      expect(activitySections.length).toBeGreaterThan(0)
+    })
+  })
+
+  it('should handle API error gracefully', async () => {
+    const store = createTestStore()
+
+    mockApi.onGet('/competitors').reply(500, { detail: 'Server error' })
+
+    render(
+      <Provider store={store}>
+        <DashboardPage />
+      </Provider>
+    )
+
+    await waitFor(() => {
+      const metricCards = screen.getAllByText('0')
+      expect(metricCards.length).toBeGreaterThan(0)
     })
   })
 })
