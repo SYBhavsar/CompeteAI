@@ -68,7 +68,7 @@ describe('Header Component', () => {
   it('should logout user and redirect to /login when clicking Sign out', async () => {
     const user = userEvent.setup()
     const store = createTestStore()
-    const removeTokenSpy = jest.spyOn(Storage.prototype, 'removeItem')
+    const removeTokenSpy = jest.spyOn(localStorage, 'removeItem')
 
     render(
       <Provider store={store}>

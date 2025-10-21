@@ -7,6 +7,16 @@ import { z } from 'zod'
 import { useRouter } from 'next/navigation'
 import { useAppDispatch, useAppSelector } from '@/lib/hooks'
 import { loginAsync, selectAuthLoading, selectAuthError, selectIsAuthenticated } from '@/features/auth/authSlice'
+import { Button } from '@/components/ui/button'
+import { Input } from '@/components/ui/input'
+import { Label } from '@/components/ui/label'
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from '@/components/ui/card'
 
 // Validation schema
 const loginSchema = z.object({
@@ -52,100 +62,89 @@ export default function LoginPage() {
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-background px-4">
-      <div className="w-full max-w-md space-y-8">
-        {/* Header */}
-        <div className="text-center">
-          <h1 className="text-3xl font-bold text-text-primary">Sign In</h1>
-          <p className="mt-2 text-sm text-text-secondary">
+      <Card className="w-full max-w-md">
+        <CardHeader className="text-center">
+          <CardTitle className="text-3xl font-bold">Sign In</CardTitle>
+          <CardDescription className="mt-2 text-sm text-text-secondary">
             Access your competitive intelligence dashboard
-          </p>
-        </div>
-
-        {/* Login Form */}
-        <form onSubmit={handleSubmit(onSubmit)} className="mt-8 space-y-6 bg-surface p-8 rounded-lg border border-border">
-          {/* API Error Message */}
-          {error && (
-            <div className="rounded-md bg-error/10 border border-error p-3">
-              <p className="text-sm text-error">{error}</p>
-            </div>
-          )}
-
-          {/* Email Field */}
-          <div>
-            <label htmlFor="email" className="block text-sm font-medium text-text-primary mb-2">
-              Email
-            </label>
-            <input
-              id="email"
-              type="email"
-              autoComplete="email"
-              {...register('email')}
-              className="w-full px-4 py-2 bg-background border border-border rounded-md text-text-primary placeholder-text-secondary focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
-              placeholder="you@example.com"
-            />
-            {errors.email && (
-              <p className="mt-1 text-sm text-error">{errors.email.message}</p>
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
+            {/* API Error Message */}
+            {error && (
+              <div className="rounded-md bg-error/10 border border-error p-3">
+                <p className="text-sm text-error">{error}</p>
+              </div>
             )}
-          </div>
 
-          {/* Password Field */}
-          <div>
-            <label htmlFor="password" className="block text-sm font-medium text-text-primary mb-2">
-              Password
-            </label>
-            <input
-              id="password"
-              type="password"
-              autoComplete="current-password"
-              {...register('password')}
-              className="w-full px-4 py-2 bg-background border border-border rounded-md text-text-primary placeholder-text-secondary focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
-              placeholder="••••••••"
-            />
-            {errors.password && (
-              <p className="mt-1 text-sm text-error">{errors.password.message}</p>
-            )}
-          </div>
-
-          {/* Remember Me & Forgot Password */}
-          <div className="flex items-center justify-between">
-            <div className="flex items-center">
-              <input
-                id="remember-me"
-                name="remember-me"
-                type="checkbox"
-                className="h-4 w-4 rounded border-border text-primary focus:ring-primary"
+            {/* Email Field */}
+            <div className="grid gap-2">
+              <Label htmlFor="email">Email</Label>
+              <Input
+                id="email"
+                type="email"
+                autoComplete="email"
+                {...register('email')}
+                placeholder="you@example.com"
               />
-              <label htmlFor="remember-me" className="ml-2 block text-sm text-text-secondary">
-                Remember me
-              </label>
+              {errors.email && (
+                <p className="mt-1 text-sm text-error">{errors.email.message}</p>
+              )}
             </div>
-            <div className="text-sm">
-              <a href="#" className="font-medium text-primary hover:text-primary/90">
-                Forgot password?
-              </a>
+
+            {/* Password Field */}
+            <div className="grid gap-2">
+              <Label htmlFor="password">Password</Label>
+              <Input
+                id="password"
+                type="password"
+                autoComplete="current-password"
+                {...register('password')}
+                placeholder="••••••••"
+              />
+              {errors.password && (
+                <p className="mt-1 text-sm text-error">{errors.password.message}</p>
+              )}
             </div>
-          </div>
 
-          {/* Submit Button */}
-          <button
-            type="submit"
-            disabled={loading}
-            className="w-full py-3 px-4 bg-primary hover:bg-primary/90 text-white font-medium rounded-md transition-colors disabled:opacity-50 disabled:cursor-not-allowed focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 focus:ring-offset-background"
-          >
-            {loading ? 'Signing in...' : 'Sign In'}
-          </button>
+            {/* Remember Me & Forgot Password */}
+            <div className="flex items-center justify-between">
+              <div className="flex items-center">
+                <input
+                  id="remember-me"
+                  name="remember-me"
+                  type="checkbox"
+                  className="h-4 w-4 rounded border-border text-primary focus:ring-primary"
+                />
+                <label htmlFor="remember-me" className="ml-2 block text-sm text-text-secondary">
+                  Remember me
+                </label>
+              </div>
+              <div className="text-sm">
+                <a href="#" className="font-medium text-primary hover:text-primary/90">
+                  Forgot password?
+                </a>
+              </div>
+            </div>
 
-          {/* Register Link */}
-          <div className="text-center">
-            <p className="text-sm text-text-secondary">
-              Don't have an account?{' '}
-              <a href="/register" className="text-primary hover:text-primary/90 font-medium">
-                Sign up
-              </a>
-            </p>
-          </div>
-        </form>
-      </div>
+            {/* Submit Button */}
+            <Button type="submit" className="w-full" disabled={loading}>
+              {loading ? 'Signing in...' : 'Sign In'}
+            </Button>
+
+            {/* Register Link */}
+            <div className="text-center">
+              <p className="text-sm text-text-secondary">
+                Don&apos;t have an account?{' '}
+                <a href="/register" className="text-primary hover:text-primary/90 font-medium">
+                  Sign up
+                </a>
+              </p>
+            </div>
+          </form>
+        </CardContent>
+      </Card>
     </div>
   )
 }

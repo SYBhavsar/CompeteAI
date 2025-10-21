@@ -1,5 +1,5 @@
 import api from './api'
-import { LoginRequest, RegisterRequest, AuthResponse, User } from '@/types'
+import { LoginRequest, RegisterRequest, AuthResponse } from '@/types'
 
 const TOKEN_KEY = 'auth_token'
 

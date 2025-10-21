@@ -4,7 +4,6 @@ import { useRouter } from 'next/navigation'
 import { useAppDispatch, useAppSelector } from '@/lib/hooks'
 import { logout, selectUser } from '@/features/auth/authSlice'
 import { UserCircleIcon, ArrowRightOnRectangleIcon, MagnifyingGlassIcon } from '@heroicons/react/24/outline'
-import clsx from 'clsx'
 import NotificationDropdown from './NotificationDropdown'
 import { Input } from '@/components/ui/input'
 import {

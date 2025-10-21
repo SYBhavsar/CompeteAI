@@ -25,8 +25,9 @@ export const fetchCompetitorsAsync = createAsyncThunk(
     try {
       const competitors = await competitorsService.getAll()
       return competitors
-    } catch (error: any) {
-      return rejectWithValue(error.response?.data?.detail || 'Failed to fetch competitors')
+    } catch (error) {
+      const err = error as { response?: { data?: { detail?: string } } }
+      return rejectWithValue(err.response?.data?.detail || 'Failed to fetch competitors')
     }
   }
 )
@@ -40,8 +41,9 @@ export const fetchCompetitorByIdAsync = createAsyncThunk(
     try {
       const competitor = await competitorsService.getById(id)
       return competitor
-    } catch (error: any) {
-      return rejectWithValue(error.response?.data?.detail || 'Failed to fetch competitor')
+    } catch (error) {
+      const err = error as { response?: { data?: { detail?: string } } }
+      return rejectWithValue(err.response?.data?.detail || 'Failed to fetch competitor')
     }
   }
 )
@@ -55,8 +57,9 @@ export const createCompetitorAsync = createAsyncThunk(
     try {
       const competitor = await competitorsService.create(data)
       return competitor
-    } catch (error: any) {
-      return rejectWithValue(error.response?.data?.detail || 'Failed to create competitor')
+    } catch (error) {
+      const err = error as { response?: { data?: { detail?: string } } }
+      return rejectWithValue(err.response?.data?.detail || 'Failed to create competitor')
     }
   }
 )
@@ -73,8 +76,9 @@ export const updateCompetitorAsync = createAsyncThunk(
     try {
       const competitor = await competitorsService.update(id, data)
       return competitor
-    } catch (error: any) {
-      return rejectWithValue(error.response?.data?.detail || 'Failed to update competitor')
+    } catch (error) {
+      const err = error as { response?: { data?: { detail?: string } } }
+      return rejectWithValue(err.response?.data?.detail || 'Failed to update competitor')
     }
   }
 )
@@ -88,8 +92,9 @@ export const deleteCompetitorAsync = createAsyncThunk(
     try {
       await competitorsService.delete(id)
       return id
-    } catch (error: any) {
-      return rejectWithValue(error.response?.data?.detail || 'Failed to delete competitor')
+    } catch (error) {
+      const err = error as { response?: { data?: { detail?: string } } }
+      return rejectWithValue(err.response?.data?.detail || 'Failed to delete competitor')
     }
   }
 )

@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useCallback } from 'react'
 import { dataSourcesService } from '@/services/dataSourcesService'
 import { DataSource } from '@/types'
 import { PlusIcon, PencilIcon, TrashIcon } from '@heroicons/react/24/outline'
@@ -35,27 +35,28 @@ export default function DataSourcesManager({ competitorId }: DataSourcesManagerP
   const [deleteConfirmId, setDeleteConfirmId] = useState<number | null>(null)
 
   /**
-   * Fetch data sources on mount
-   */
-  useEffect(() => {
-    fetchDataSources()
-  }, [competitorId])
-
-  /**
    * Fetch all data sources for the competitor
    */
-  const fetchDataSources = async () => {
+  const fetchDataSources = useCallback(async () => {
     try {
       setLoading(true)
       setError(null)
       const sources = await dataSourcesService.getByCompetitor(competitorId)
       setDataSources(sources)
-    } catch (err: any) {
-      setError(err.response?.data?.detail || 'Failed to fetch data sources')
+    } catch (err) {
+      const error = err as { response?: { data?: { detail?: string } } }
+      setError(error.response?.data?.detail || 'Failed to fetch data sources')
     } finally {
       setLoading(false)
     }
-  }
+  }, [competitorId])
+
+  /**
+   * Fetch data sources on mount
+   */
+  useEffect(() => {
+    fetchDataSources()
+  }, [fetchDataSources])
 
   /**
    * Handle creating a new data source
@@ -160,7 +161,7 @@ export default function DataSourcesManager({ competitorId }: DataSourcesManagerP
                 <TableCell className="font-medium">{dataSource.source_type}</TableCell>
                 <TableCell>{dataSource.url}</TableCell>
                 <TableCell>
-                  <Badge variant={dataSource.is_active ? 'success' : 'destructive'}>
+                  <Badge variant={dataSource.is_active ? 'default' : 'destructive'}>
                     {dataSource.is_active ? 'Active' : 'Inactive'}
                   </Badge>
                 </TableCell>

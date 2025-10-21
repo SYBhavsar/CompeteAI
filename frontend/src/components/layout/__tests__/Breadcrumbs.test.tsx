@@ -1,12 +1,14 @@
 import { render, screen } from '@testing-library/react'
+import { usePathname } from 'next/navigation'
 import Breadcrumbs from '../Breadcrumbs'
 
 // Mock next/navigation
 jest.mock('next/navigation', () => ({
+  useRouter: () => ({
+    push: jest.fn(),
+  }),
   usePathname: jest.fn(),
 }))
-
-const { usePathname } = require('next/navigation')
 
 describe('Breadcrumbs Component', () => {
   it('should render Home breadcrumb on dashboard root', () => {

@@ -3,7 +3,7 @@ import { Provider } from 'react-redux'
 import { configureStore } from '@reduxjs/toolkit'
 import authReducer from '@/features/auth/authSlice'
 import ProtectedRoute from '../ProtectedRoute'
-import { mockApi, resetMockApi } from '@/tests/helpers/mockApi'
+import {  resetMockApi } from '@/tests/helpers/mockApi'
 
 const mockPush = jest.fn()
 jest.mock('next/navigation', () => ({
@@ -43,7 +43,7 @@ describe('ProtectedRoute Component', () => {
     // Mock no token in localStorage
     const getTokenSpy = jest.spyOn(Storage.prototype, 'getItem').mockReturnValue(null)
 
-    const { container } = render(
+    render(
       <Provider store={store}>
         <ProtectedRoute>
           <div>Protected Content</div>

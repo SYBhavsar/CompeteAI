@@ -1,35 +1,24 @@
 import '@testing-library/jest-dom'
 
 // Mock ResizeObserver
-global.ResizeObserver = jest.fn(() => ({
-  observe: jest.fn(),
-  unobserve: jest.fn(),
-  disconnect: jest.fn(),
-}))
+class ResizeObserverMock {
+  observe() {}
+  unobserve() {}
+  disconnect() {}
+}
 
-// Mock next/navigation
-jest.mock('next/navigation', () => ({
-  useRouter() {
-    return {
-      push: jest.fn(),
-      replace: jest.fn(),
-      prefetch: jest.fn(),
-      back: jest.fn(),
-    }
-  },
-  usePathname() {
-    return ''
-  },
-  useSearchParams() {
-    return new URLSearchParams()
-  },
-}))
+global.ResizeObserver = ResizeObserverMock as unknown as typeof ResizeObserver
 
 // Mock localStorage
-const localStorageMock = {
-  getItem: jest.fn(),
-  setItem: jest.fn(),
-  removeItem: jest.fn(),
-  clear: jest.fn(),
+const localStorageMock: Storage = {
+  getItem: () => null,
+  setItem: () => {},
+  removeItem: () => {},
+  clear: () => {},
+  length: 0,
+  key: () => null,
 }
-global.localStorage = localStorageMock as any
+Object.defineProperty(global, 'localStorage', {
+  value: localStorageMock,
+  writable: true,
+})

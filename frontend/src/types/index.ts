@@ -47,7 +47,7 @@ export interface Alert {
   user_id: number
   competitor_id: number | null
   alert_type: 'sentiment_change' | 'new_content' | 'keyword_match'
-  conditions: Record<string, any> | null
+  conditions: Record<string, unknown> | null
   is_active: boolean
   created_at: string
   updated_at: string
@@ -68,7 +68,7 @@ export interface SavedSearch {
   name: string
   search_type: 'semantic' | 'traditional'
   query: string
-  filters: Record<string, any> | null
+  filters: Record<string, unknown> | null
   created_at: string
   updated_at: string
 }
@@ -78,7 +78,7 @@ export interface SearchHistory {
   user_id: number
   search_type: 'semantic' | 'traditional'
   query: string
-  filters: Record<string, any> | null
+  filters: Record<string, unknown> | null
   results_count: number | null
   executed_at: string
 }

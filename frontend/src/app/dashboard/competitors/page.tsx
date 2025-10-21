@@ -14,6 +14,22 @@ import { PlusIcon, EyeIcon, TrashIcon } from '@heroicons/react/24/outline'
 import { format } from 'date-fns'
 import CompetitorModal from '@/components/competitors/CompetitorModal'
 import DeleteConfirmModal from '@/components/competitors/DeleteConfirmModal'
+import { Button } from '@/components/ui/button'
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from '@/components/ui/card'
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from '@/components/ui/table'
 
 /**
  * Competitors list page
@@ -88,101 +104,61 @@ export default function CompetitorsPage() {
             Manage and monitor your competitors
           </p>
         </div>
-        <button
-          type="button"
-          onClick={() => setIsAddModalOpen(true)}
-          className="inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-primary hover:bg-primary/90 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary"
-        >
+        <Button onClick={() => setIsAddModalOpen(true)}>
           <PlusIcon className="h-5 w-5 mr-2" />
           Add Competitor
-        </button>
+        </Button>
       </div>
 
       {/* Competitors Table */}
       {competitors.length === 0 ? (
-        <div className="text-center py-12 bg-surface border border-border rounded-lg">
-          <p className="text-text-secondary text-lg">No competitors found</p>
-          <p className="text-text-secondary text-sm mt-2">
-            Get started by adding your first competitor
-          </p>
-          <button
-            type="button"
-            onClick={() => setIsAddModalOpen(true)}
-            className="mt-4 inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-primary hover:bg-primary/90"
-          >
-            <PlusIcon className="h-5 w-5 mr-2" />
-            Add Competitor
-          </button>
-        </div>
+        <Card className="text-center py-12">
+          <CardHeader>
+            <CardTitle className="text-lg">No competitors found</CardTitle>
+            <CardDescription className="mt-2 text-sm text-text-secondary">
+              Get started by adding your first competitor
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <Button onClick={() => setIsAddModalOpen(true)} className="mt-4">
+              <PlusIcon className="h-5 w-5 mr-2" />
+              Add Competitor
+            </Button>
+          </CardContent>
+        </Card>
       ) : (
-        <div className="bg-surface border border-border rounded-lg overflow-hidden">
-          <table className="min-w-full divide-y divide-border">
-            <thead className="bg-background">
-              <tr>
-                <th className="px-6 py-3 text-left text-xs font-medium text-text-secondary uppercase tracking-wider">
-                  Name
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-text-secondary uppercase tracking-wider">
-                  Domain
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-text-secondary uppercase tracking-wider">
-                  Industry
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-text-secondary uppercase tracking-wider">
-                  Created
-                </th>
-                <th className="px-6 py-3 text-right text-xs font-medium text-text-secondary uppercase tracking-wider">
-                  Actions
-                </th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-border">
+        <div className="rounded-lg border">
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead>Name</TableHead>
+                <TableHead>Domain</TableHead>
+                <TableHead>Industry</TableHead>
+                <TableHead>Created</TableHead>
+                <TableHead className="text-right">Actions</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
               {competitors.map((competitor) => (
-                <tr key={competitor.id} className="hover:bg-background transition-colors">
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    <div className="text-sm font-medium text-text-primary">
-                      {competitor.name}
-                    </div>
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    <div className="text-sm text-text-secondary">
-                      {competitor.domain || '-'}
-                    </div>
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    <div className="text-sm text-text-secondary">
-                      {competitor.industry || '-'}
-                    </div>
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    <div className="text-sm text-text-secondary">
-                      {format(new Date(competitor.created_at), 'MMM d, yyyy')}
-                    </div>
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium space-x-2">
-                    <button
-                      type="button"
-                      onClick={() => handleView(competitor.id)}
-                      className="text-primary hover:text-primary/90 inline-flex items-center"
-                      aria-label="View"
-                    >
-                      <EyeIcon className="h-5 w-5 mr-1" />
-                      View
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => setDeleteConfirmId(competitor.id)}
-                      className="text-error hover:text-error/90 inline-flex items-center ml-4"
-                      aria-label="Delete"
-                    >
-                      <TrashIcon className="h-5 w-5 mr-1" />
-                      Delete
-                    </button>
-                  </td>
-                </tr>
+                <TableRow key={competitor.id} className="hover:bg-background/50">
+                  <TableCell className="font-medium">
+                    {competitor.name}
+                  </TableCell>
+                  <TableCell>{competitor.domain || '-'}</TableCell>
+                  <TableCell>{competitor.industry || '-'}</TableCell>
+                  <TableCell>{format(new Date(competitor.created_at), 'MMM d, yyyy')}</TableCell>
+                  <TableCell className="text-right">
+                    <Button variant="ghost" size="icon" onClick={() => handleView(competitor.id)} aria-label="View">
+                      <EyeIcon className="h-5 w-5" />
+                    </Button>
+                    <Button variant="ghost" size="icon" onClick={() => setDeleteConfirmId(competitor.id)} aria-label="Delete">
+                      <TrashIcon className="h-5 w-5" />
+                    </Button>
+                  </TableCell>
+                </TableRow>
               ))}
-            </tbody>
-          </table>
+            </TableBody>
+          </Table>
         </div>
       )}
 

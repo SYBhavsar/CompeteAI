@@ -18,6 +18,19 @@ import CompetitorModal from '@/components/competitors/CompetitorModal'
 import DeleteConfirmModal from '@/components/competitors/DeleteConfirmModal'
 import DataSourcesManager from '@/components/competitors/DataSourcesManager'
 import { DataSource, ProcessedInsight } from '@/types'
+import { Button } from '@/components/ui/button'
+import {
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+} from '@/components/ui/card'
+import {
+  Tabs,
+  TabsContent,
+  TabsList,
+  TabsTrigger,
+} from '@/components/ui/tabs'
 
 type TabType = 'overview' | 'data-sources' | 'insights' | 'scraped-data'
 
@@ -41,7 +54,6 @@ export default function CompetitorDetailPage() {
 
   const [dataSources, setDataSources] = useState<DataSource[]>([])
   const [insights, setInsights] = useState<ProcessedInsight[]>([])
-  const [dataSourcesLoading, setDataSourcesLoading] = useState(false)
   const [insightsLoading, setInsightsLoading] = useState(false)
 
   /**
@@ -59,7 +71,6 @@ export default function CompetitorDetailPage() {
   useEffect(() => {
     if (competitorId) {
       // Fetch data sources
-      setDataSourcesLoading(true)
       dataSourcesService
         .getByCompetitor(competitorId)
         .then((sources) => {
@@ -67,9 +78,6 @@ export default function CompetitorDetailPage() {
         })
         .catch((err) => {
           console.error('Failed to fetch data sources:', err)
-        })
-        .finally(() => {
-          setDataSourcesLoading(false)
         })
 
       // Fetch insights
@@ -163,164 +171,127 @@ export default function CompetitorDetailPage() {
           )}
         </div>
         <div className="flex space-x-2">
-          <button
-            type="button"
-            onClick={() => setIsEditModalOpen(true)}
-            className="inline-flex items-center px-4 py-2 border border-border rounded-md text-sm font-medium text-text-primary bg-surface hover:bg-background"
-          >
+          <Button variant="outline" onClick={() => setIsEditModalOpen(true)}>
             <PencilIcon className="h-4 w-4 mr-2" />
             Edit
-          </button>
-          <button
-            type="button"
-            onClick={() => setIsDeleteModalOpen(true)}
-            className="inline-flex items-center px-4 py-2 border border-error rounded-md text-sm font-medium text-error bg-surface hover:bg-error/10"
-          >
+          </Button>
+          <Button variant="destructive" onClick={() => setIsDeleteModalOpen(true)}>
             <TrashIcon className="h-4 w-4 mr-2" />
             Delete
-          </button>
+          </Button>
         </div>
       </div>
 
       {/* Stats Cards */}
       <div className="grid grid-cols-1 gap-5 sm:grid-cols-3">
-        <div className="bg-surface border border-border rounded-lg p-5">
-          <div className="text-sm font-medium text-text-secondary">Data Sources</div>
-          <div className="mt-1 text-3xl font-semibold text-text-primary">{dataSources.length}</div>
-        </div>
-        <div className="bg-surface border border-border rounded-lg p-5">
-          <div className="text-sm font-medium text-text-secondary">Last Scraped</div>
-          <div className="mt-1 text-lg font-semibold text-text-primary">
-            {lastScraped ? format(lastScraped, 'MMM d, yyyy') : 'Never'}
-          </div>
-        </div>
-        <div className="bg-surface border border-border rounded-lg p-5">
-          <div className="text-sm font-medium text-text-secondary">Insights</div>
-          <div className="mt-1 text-3xl font-semibold text-text-primary">{insights.length}</div>
-        </div>
+        <Card>
+          <CardHeader>
+            <CardTitle className="text-sm font-medium">Data Sources</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="text-3xl font-bold">{dataSources.length}</div>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardHeader>
+            <CardTitle className="text-sm font-medium">Last Scraped</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="text-lg font-semibold">
+              {lastScraped ? format(lastScraped, 'MMM d, yyyy') : 'Never'}
+            </div>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardHeader>
+            <CardTitle className="text-sm font-medium">Insights</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="text-3xl font-bold">{insights.length}</div>
+          </CardContent>
+        </Card>
       </div>
 
       {/* Tabs */}
-      <div className="border-b border-border">
-        <nav className="-mb-px flex space-x-8">
-          <button
-            type="button"
-            onClick={() => setActiveTab('overview')}
-            className={`py-2 px-1 border-b-2 font-medium text-sm ${
-              activeTab === 'overview'
-                ? 'border-primary text-primary'
-                : 'border-transparent text-text-secondary hover:text-text-primary hover:border-border'
-            }`}
-            role="tab"
-            aria-selected={activeTab === 'overview'}
-          >
-            Overview
-          </button>
-          <button
-            type="button"
-            onClick={() => setActiveTab('data-sources')}
-            className={`py-2 px-1 border-b-2 font-medium text-sm ${
-              activeTab === 'data-sources'
-                ? 'border-primary text-primary'
-                : 'border-transparent text-text-secondary hover:text-text-primary hover:border-border'
-            }`}
-            role="tab"
-            aria-selected={activeTab === 'data-sources'}
-          >
-            Data Sources
-          </button>
-          <button
-            type="button"
-            onClick={() => setActiveTab('insights')}
-            className={`py-2 px-1 border-b-2 font-medium text-sm ${
-              activeTab === 'insights'
-                ? 'border-primary text-primary'
-                : 'border-transparent text-text-secondary hover:text-text-primary hover:border-border'
-            }`}
-            role="tab"
-            aria-selected={activeTab === 'insights'}
-          >
-            Insights
-          </button>
-          <button
-            type="button"
-            onClick={() => setActiveTab('scraped-data')}
-            className={`py-2 px-1 border-b-2 font-medium text-sm ${
-              activeTab === 'scraped-data'
-                ? 'border-primary text-primary'
-                : 'border-transparent text-text-secondary hover:text-text-primary hover:border-border'
-            }`}
-            role="tab"
-            aria-selected={activeTab === 'scraped-data'}
-          >
-            Scraped Data
-          </button>
-        </nav>
-      </div>
-
-      {/* Tab Content */}
-      <div className="mt-6">
-        {activeTab === 'overview' && (
-          <div className="bg-surface border border-border rounded-lg p-6">
-            <h3 className="text-lg font-medium text-text-primary mb-4">Overview</h3>
-            <dl className="space-y-3">
-              <div>
-                <dt className="text-sm font-medium text-text-secondary">Name</dt>
-                <dd className="mt-1 text-sm text-text-primary">{competitor.name}</dd>
-              </div>
-              {competitor.domain && (
+      <Tabs value={activeTab} onValueChange={(value) => setActiveTab(value as TabType)}>
+        <TabsList>
+          <TabsTrigger value="overview">Overview</TabsTrigger>
+          <TabsTrigger value="data-sources">Data Sources</TabsTrigger>
+          <TabsTrigger value="insights">AI Insights</TabsTrigger>
+          <TabsTrigger value="scraped-data">Scraped Data</TabsTrigger>
+        </TabsList>
+        <TabsContent value="overview">
+          <Card>
+            <CardHeader>
+              <CardTitle>Overview</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <dl className="space-y-3">
                 <div>
-                  <dt className="text-sm font-medium text-text-secondary">Domain</dt>
-                  <dd className="mt-1 text-sm text-text-primary">{competitor.domain}</dd>
+                  <dt className="text-sm font-medium text-text-secondary">Name</dt>
+                  <dd className="mt-1 text-sm text-text-primary">{competitor.name}</dd>
                 </div>
-              )}
-              {competitor.industry && (
-                <div>
-                  <dt className="text-sm font-medium text-text-secondary">Industry</dt>
-                  <dd className="mt-1 text-sm text-text-primary">{competitor.industry}</dd>
-                </div>
-              )}
-              <div>
-                <dt className="text-sm font-medium text-text-secondary">Created</dt>
-                <dd className="mt-1 text-sm text-text-primary">
-                  {format(new Date(competitor.created_at), 'MMMM d, yyyy')}
-                </dd>
-              </div>
-            </dl>
-          </div>
-        )}
-
-        {activeTab === 'data-sources' && <DataSourcesManager competitorId={competitorId} />}
-
-        {activeTab === 'insights' && (
-          <div className="bg-surface border border-border rounded-lg p-6">
-            <h3 className="text-lg font-medium text-text-primary mb-4">AI Insights</h3>
-            {insightsLoading ? (
-              <p className="text-text-secondary">Loading insights...</p>
-            ) : insights.length === 0 ? (
-              <p className="text-text-secondary">No insights available yet.</p>
-            ) : (
-              <div className="space-y-4">
-                {insights.map((insight) => (
-                  <div key={insight.id} className="p-4 bg-background rounded">
-                    <p className="text-sm text-text-primary">{insight.summary}</p>
-                    <p className="text-xs text-text-secondary mt-2">
-                      Sentiment: <span className="font-medium">{insight.sentiment}</span>
-                    </p>
+                {competitor.domain && (
+                  <div>
+                    <dt className="text-sm font-medium text-text-secondary">Domain</dt>
+                    <dd className="mt-1 text-sm text-text-primary">{competitor.domain}</dd>
                   </div>
-                ))}
-              </div>
-            )}
-          </div>
-        )}
-
-        {activeTab === 'scraped-data' && (
-          <div className="bg-surface border border-border rounded-lg p-6">
-            <h3 className="text-lg font-medium text-text-primary mb-4">Scraped Data</h3>
-            <p className="text-text-secondary">Scraped data will be displayed here.</p>
-          </div>
-        )}
-      </div>
+                )}
+                {competitor.industry && (
+                  <div>
+                    <dt className="text-sm font-medium text-text-secondary">Industry</dt>
+                    <dd className="mt-1 text-sm text-text-primary">{competitor.industry}</dd>
+                  </div>
+                )}
+                <div>
+                  <dt className="text-sm font-medium text-text-secondary">Created</dt>
+                  <dd className="mt-1 text-sm text-text-primary">
+                    {format(new Date(competitor.created_at), 'MMMM d, yyyy')}
+                  </dd>
+                </div>
+              </dl>
+            </CardContent>
+          </Card>
+        </TabsContent>
+        <TabsContent value="data-sources">
+          <DataSourcesManager competitorId={competitorId} />
+        </TabsContent>
+        <TabsContent value="insights">
+          <Card>
+            <CardHeader>
+              <CardTitle>AI Insights</CardTitle>
+            </CardHeader>
+            <CardContent>
+              {insightsLoading ? (
+                <p className="text-text-secondary">Loading insights...</p>
+              ) : insights.length === 0 ? (
+                <p className="text-text-secondary">No insights available yet.</p>
+              ) : (
+                <div className="space-y-4">
+                  {insights.map((insight) => (
+                    <div key={insight.id} className="p-4 bg-background rounded">
+                      <p className="text-sm text-text-primary">{insight.summary}</p>
+                      <p className="text-xs text-text-secondary mt-2">
+                        Sentiment: <span className="font-medium">{insight.sentiment}</span>
+                      </p>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </CardContent>
+          </Card>
+        </TabsContent>
+        <TabsContent value="scraped-data">
+          <Card>
+            <CardHeader>
+              <CardTitle>Scraped Data</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <p className="text-text-secondary">Scraped data will be displayed here.</p>
+            </CardContent>
+          </Card>
+        </TabsContent>
+      </Tabs>
 
       {/* Edit Modal */}
       <CompetitorModal

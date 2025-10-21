@@ -228,7 +228,7 @@ describe('Competitors List Page', () => {
     })
 
     // Click delete button
-    const deleteButton = screen.getByRole('button', { name: /delete/i })
+    const deleteButton = screen.getByRole('button', { name: 'Delete' })
     await user.click(deleteButton)
 
     // Confirm deletion

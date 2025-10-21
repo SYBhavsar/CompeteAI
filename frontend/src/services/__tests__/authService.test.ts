@@ -99,7 +99,7 @@ describe('authService', () => {
 
   describe('logout', () => {
     it('should clear auth token from localStorage', () => {
-      const removeItemSpy = jest.spyOn(Storage.prototype, 'removeItem')
+      const removeItemSpy = jest.spyOn(localStorage, 'removeItem')
       localStorage.setItem('auth_token', 'mock-token')
 
       authService.logout()
@@ -111,7 +111,7 @@ describe('authService', () => {
 
   describe('token management', () => {
     it('should save token to localStorage', () => {
-      const setItemSpy = jest.spyOn(Storage.prototype, 'setItem')
+      const setItemSpy = jest.spyOn(localStorage, 'setItem')
 
       authService.saveToken('test-token-123')
 
@@ -120,7 +120,7 @@ describe('authService', () => {
     })
 
     it('should get token from localStorage', () => {
-      const getItemSpy = jest.spyOn(Storage.prototype, 'getItem').mockReturnValue('stored-token')
+      const getItemSpy = jest.spyOn(localStorage, 'getItem').mockReturnValue('stored-token')
 
       const token = authService.getToken()
 
@@ -130,7 +130,7 @@ describe('authService', () => {
     })
 
     it('should remove token from localStorage', () => {
-      const removeItemSpy = jest.spyOn(Storage.prototype, 'removeItem')
+      const removeItemSpy = jest.spyOn(localStorage, 'removeItem')
 
       authService.removeToken()
 

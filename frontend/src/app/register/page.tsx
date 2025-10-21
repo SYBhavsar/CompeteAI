@@ -1,12 +1,23 @@
 'use client'
 
 import { useEffect } from 'react'
-import { useForm } from 'react-hook-form'
+import { useForm, Controller } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
 import { useRouter } from 'next/navigation'
 import { useAppDispatch, useAppSelector } from '@/lib/hooks'
 import { registerAsync, selectAuthLoading, selectAuthError, selectIsAuthenticated } from '@/features/auth/authSlice'
+import { Button } from '@/components/ui/button'
+import { Input } from '@/components/ui/input'
+import { Label } from '@/components/ui/label'
+import { Checkbox } from '@/components/ui/checkbox'
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from '@/components/ui/card'
 
 // Validation schema
 const registerSchema = z.object({
@@ -34,9 +45,13 @@ export default function RegisterPage() {
   const {
     register,
     handleSubmit,
+    control,
     formState: { errors },
   } = useForm<RegisterFormData>({
     resolver: zodResolver(registerSchema),
+    defaultValues: {
+      terms: false,
+    },
   })
 
   /**
@@ -52,6 +67,7 @@ export default function RegisterPage() {
    * Handle form submission
    */
   const onSubmit = async (data: RegisterFormData) => {
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const { confirmPassword, terms, ...registerData } = data
     const result = await dispatch(registerAsync(registerData))
     if (registerAsync.fulfilled.match(result)) {
@@ -61,138 +77,129 @@ export default function RegisterPage() {
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-background px-4">
-      <div className="w-full max-w-md space-y-8">
-        {/* Header */}
-        <div className="text-center">
-          <h1 className="text-3xl font-bold text-text-primary">Sign Up</h1>
-          <p className="mt-2 text-sm text-text-secondary">
+      <Card className="w-full max-w-md">
+        <CardHeader className="text-center">
+          <CardTitle className="text-3xl font-bold">Sign Up</CardTitle>
+          <CardDescription className="mt-2 text-sm text-text-secondary">
             Create your account to get started
-          </p>
-        </div>
-
-        {/* Register Form */}
-        <form onSubmit={handleSubmit(onSubmit)} className="mt-8 space-y-6 bg-surface p-8 rounded-lg border border-border">
-          {/* API Error Message */}
-          {error && (
-            <div className="rounded-md bg-error/10 border border-error p-3">
-              <p className="text-sm text-error">{error}</p>
-            </div>
-          )}
-
-          {/* Full Name Field */}
-          <div>
-            <label htmlFor="full_name" className="block text-sm font-medium text-text-primary mb-2">
-              Full Name
-            </label>
-            <input
-              id="full_name"
-              type="text"
-              autoComplete="name"
-              {...register('full_name')}
-              className="w-full px-4 py-2 bg-background border border-border rounded-md text-text-primary placeholder-text-secondary focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
-              placeholder="John Doe"
-            />
-            {errors.full_name && (
-              <p className="mt-1 text-sm text-error">{errors.full_name.message}</p>
-            )}
-          </div>
-
-          {/* Email Field */}
-          <div>
-            <label htmlFor="email" className="block text-sm font-medium text-text-primary mb-2">
-              Email
-            </label>
-            <input
-              id="email"
-              type="email"
-              autoComplete="email"
-              {...register('email')}
-              className="w-full px-4 py-2 bg-background border border-border rounded-md text-text-primary placeholder-text-secondary focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
-              placeholder="you@example.com"
-            />
-            {errors.email && (
-              <p className="mt-1 text-sm text-error">{errors.email.message}</p>
-            )}
-          </div>
-
-          {/* Password Field */}
-          <div>
-            <label htmlFor="password" className="block text-sm font-medium text-text-primary mb-2">
-              Password
-            </label>
-            <input
-              id="password"
-              type="password"
-              autoComplete="new-password"
-              {...register('password')}
-              className="w-full px-4 py-2 bg-background border border-border rounded-md text-text-primary placeholder-text-secondary focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
-              placeholder="••••••••"
-            />
-            {errors.password && (
-              <p className="mt-1 text-sm text-error">{errors.password.message}</p>
-            )}
-          </div>
-
-          {/* Confirm Password Field */}
-          <div>
-            <label htmlFor="confirmPassword" className="block text-sm font-medium text-text-primary mb-2">
-              Confirm Password
-            </label>
-            <input
-              id="confirmPassword"
-              type="password"
-              autoComplete="new-password"
-              {...register('confirmPassword')}
-              className="w-full px-4 py-2 bg-background border border-border rounded-md text-text-primary placeholder-text-secondary focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
-              placeholder="••••••••"
-            />
-            {errors.confirmPassword && (
-              <p className="mt-1 text-sm text-error">{errors.confirmPassword.message}</p>
-            )}
-          </div>
-
-          {/* Terms & Conditions */}
-          <div>
-            <div className="flex items-start">
-              <div className="flex items-center h-5">
-                <input
-                  id="terms"
-                  type="checkbox"
-                  {...register('terms')}
-                  className="h-4 w-4 rounded border-border text-primary focus:ring-primary"
-                />
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
+            {/* API Error Message */}
+            {error && (
+              <div className="rounded-md bg-error/10 border border-error p-3">
+                <p className="text-sm text-error">{error}</p>
               </div>
-              <div className="ml-3 text-sm">
-                <label htmlFor="terms" className="text-text-secondary">
-                  I agree to the <a href="#" className="font-medium text-primary hover:text-primary/90">Terms of Service</a> and <a href="#" className="font-medium text-primary hover:text-primary/90">Privacy Policy</a>.
-                </label>
+            )}
+
+            {/* Full Name Field */}
+            <div className="grid gap-2">
+              <Label htmlFor="full_name">Full Name</Label>
+              <Input
+                id="full_name"
+                type="text"
+                autoComplete="name"
+                {...register('full_name')}
+                placeholder="John Doe"
+              />
+              {errors.full_name && (
+                <p className="mt-1 text-sm text-error">{errors.full_name.message}</p>
+              )}
+            </div>
+
+            {/* Email Field */}
+            <div className="grid gap-2">
+              <Label htmlFor="email">Email</Label>
+              <Input
+                id="email"
+                type="email"
+                autoComplete="email"
+                {...register('email')}
+                placeholder="you@example.com"
+              />
+              {errors.email && (
+                <p className="mt-1 text-sm text-error">{errors.email.message}</p>
+              )}
+            </div>
+
+            {/* Password Field */}
+            <div className="grid gap-2">
+              <Label htmlFor="password">Password</Label>
+              <Input
+                id="password"
+                type="password"
+                autoComplete="new-password"
+                {...register('password')}
+                placeholder="••••••••"
+              />
+              {errors.password && (
+                <p className="mt-1 text-sm text-error">{errors.password.message}</p>
+              )}
+            </div>
+
+            {/* Confirm Password Field */}
+            <div className="grid gap-2">
+              <Label htmlFor="confirmPassword">Confirm Password</Label>
+              <Input
+                id="confirmPassword"
+                type="password"
+                autoComplete="new-password"
+                {...register('confirmPassword')}
+                placeholder="••••••••"
+              />
+              {errors.confirmPassword && (
+                <p className="mt-1 text-sm text-error">{errors.confirmPassword.message}</p>
+              )}
+            </div>
+
+            {/* Terms & Conditions */}
+            <div className="flex items-start space-x-2">
+              <Controller
+                name="terms"
+                control={control}
+                render={({ field }) => (
+                  <Checkbox
+                    id="terms"
+                    checked={field.value}
+                    onCheckedChange={field.onChange}
+                    className="mt-1"
+                  />
+                )}
+              />
+              <div className="grid gap-1.5 leading-none">
+                <Label
+                  htmlFor="terms"
+                  className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+                >
+                  I agree to the
+                  <a href="#" className="font-medium text-primary hover:text-primary/90 ml-1">Terms of Service</a>
+                  and
+                  <a href="#" className="font-medium text-primary hover:text-primary/90 ml-1">Privacy Policy</a>.
+                </Label>
                 {errors.terms && (
                   <p className="mt-1 text-sm text-error">{errors.terms.message}</p>
                 )}
               </div>
             </div>
-          </div>
 
-          {/* Submit Button */}
-          <button
-            type="submit"
-            disabled={loading}
-            className="w-full py-3 px-4 bg-primary hover:bg-primary/90 text-white font-medium rounded-md transition-colors disabled:opacity-50 disabled:cursor-not-allowed focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 focus:ring-offset-background"
-          >
-            {loading ? 'Creating account...' : 'Sign Up'}
-          </button>
+            {/* Submit Button */}
+            <Button type="submit" className="w-full" disabled={loading}>
+              {loading ? 'Creating account...' : 'Sign Up'}
+            </Button>
 
-          {/* Login Link */}
-          <div className="text-center">
-            <p className="text-sm text-text-secondary">
-              Already have an account?{' '}
-              <a href="/login" className="text-primary hover:text-primary/90 font-medium">
-                Sign in
-              </a>
-            </p>
-          </div>
-        </form>
-      </div>
+            {/* Login Link */}
+            <div className="text-center">
+              <p className="text-sm text-text-secondary">
+                Already have an account?{' '}
+                <a href="/login" className="text-primary hover:text-primary/90 font-medium">
+                  Sign in
+                </a>
+              </p>
+            </div>
+          </form>
+        </CardContent>
+      </Card>
     </div>
   )
 }
