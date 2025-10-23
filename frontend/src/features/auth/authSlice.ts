@@ -1,6 +1,7 @@
 import { createSlice, createAsyncThunk, PayloadAction } from '@reduxjs/toolkit'
 import { authService } from '@/services/authService'
 import { User, LoginRequest, RegisterRequest, AuthResponse } from '@/types'
+import api from '@/services/api'
 
 interface AuthState {
   user: User | null
@@ -66,6 +67,27 @@ export const restoreAuth = createAsyncThunk<{ token: string } | null>(
       return null
     }
     return { token }
+  }
+)
+
+/**
+ * Update user profile
+ */
+export const updateUserAsync = createAsyncThunk<User, Partial<User>>(
+  'auth/updateUser',
+  async (data) => {
+    const response = await api.put('/users/me', data)
+    return response.data
+  }
+)
+
+/**
+ * Update user password
+ */
+export const updatePasswordAsync = createAsyncThunk<void, { current_password: string; new_password: string }>(
+  'auth/updatePassword',
+  async (data) => {
+    await api.put('/users/me/password', data)
   }
 )
 
@@ -143,6 +165,35 @@ const authSlice = createSlice({
         state.isAuthenticated = false
         state.user = null
         state.token = null
+      })
+
+    // Update User
+    builder
+      .addCase(updateUserAsync.pending, (state) => {
+        state.loading = true
+        state.error = null
+      })
+      .addCase(updateUserAsync.fulfilled, (state, action: PayloadAction<User>) => {
+        state.loading = false
+        state.user = action.payload
+      })
+      .addCase(updateUserAsync.rejected, (state, action) => {
+        state.loading = false
+        state.error = action.error.message || 'Failed to update profile'
+      })
+
+    // Update Password
+    builder
+      .addCase(updatePasswordAsync.pending, (state) => {
+        state.loading = true
+        state.error = null
+      })
+      .addCase(updatePasswordAsync.fulfilled, (state) => {
+        state.loading = false
+      })
+      .addCase(updatePasswordAsync.rejected, (state, action) => {
+        state.loading = false
+        state.error = action.error.message || 'Failed to change password'
       })
   },
 })
