@@ -8,6 +8,7 @@ import {
   UsersIcon,
   MagnifyingGlassIcon,
   ChartBarIcon,
+  LightBulbIcon,
   BellIcon,
   Cog6ToothIcon,
   Bars3Icon,
@@ -27,6 +28,7 @@ const navigation = [
   { name: 'Competitors', href: '/dashboard/competitors', icon: UsersIcon },
   { name: 'Search', href: '/dashboard/search', icon: MagnifyingGlassIcon },
   { name: 'Analytics', href: '/dashboard/analytics', icon: ChartBarIcon },
+  { name: 'Insights', href: '/dashboard/insights', icon: LightBulbIcon },
   { name: 'Alerts', href: '/dashboard/alerts', icon: BellIcon },
   { name: 'Settings', href: '/dashboard/settings', icon: Cog6ToothIcon },
 ]
