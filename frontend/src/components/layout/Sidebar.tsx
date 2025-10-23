@@ -9,6 +9,7 @@ import {
   MagnifyingGlassIcon,
   ChartBarIcon,
   LightBulbIcon,
+  ArrowsRightLeftIcon,
   BellIcon,
   Cog6ToothIcon,
   Bars3Icon,
@@ -29,6 +30,7 @@ const navigation = [
   { name: 'Search', href: '/dashboard/search', icon: MagnifyingGlassIcon },
   { name: 'Analytics', href: '/dashboard/analytics', icon: ChartBarIcon },
   { name: 'Insights', href: '/dashboard/insights', icon: LightBulbIcon },
+  { name: 'Compare', href: '/dashboard/compare', icon: ArrowsRightLeftIcon },
   { name: 'Alerts', href: '/dashboard/alerts', icon: BellIcon },
   { name: 'Settings', href: '/dashboard/settings', icon: Cog6ToothIcon },
 ]
