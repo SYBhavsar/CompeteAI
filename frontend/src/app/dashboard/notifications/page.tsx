@@ -7,6 +7,7 @@ import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { formatDistanceToNow } from 'date-fns'
+import toast from 'react-hot-toast'
 
 type FilterType = 'all' | 'unread' | 'read'
 
@@ -21,7 +22,12 @@ export default function NotificationsPage() {
   }, [dispatch])
 
   const handleMarkAsRead = async (id: number) => {
-    await dispatch(markAsReadAsync(id))
+    try {
+      await dispatch(markAsReadAsync(id)).unwrap()
+      toast.success('Marked as read')
+    } catch (error) {
+      toast.error('Failed to mark as read')
+    }
   }
 
   const filteredNotifications = notifications.filter((notification) => {

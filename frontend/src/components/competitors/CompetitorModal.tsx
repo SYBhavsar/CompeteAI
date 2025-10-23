@@ -18,6 +18,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog'
+import toast from 'react-hot-toast'
 
 /**
  * Form validation schema
@@ -92,6 +93,7 @@ export default function CompetitorModal({
             },
           })
         ).unwrap()
+        toast.success('Competitor updated successfully')
       } else {
         // Create new competitor
         await dispatch(
@@ -101,12 +103,13 @@ export default function CompetitorModal({
             industry: data.industry || undefined,
           })
         ).unwrap()
+        toast.success('Competitor created successfully')
       }
 
       onSuccess()
       reset()
     } catch (error) {
-      // Error is handled by Redux slice
+      toast.error(competitor ? 'Failed to update competitor' : 'Failed to create competitor')
       console.error('Failed to save competitor:', error)
     }
   }

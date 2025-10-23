@@ -31,6 +31,7 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table'
+import toast from 'react-hot-toast'
 
 const ITEMS_PER_PAGE = 10
 
@@ -91,10 +92,15 @@ export default function CompetitorsPage() {
    */
   const handleDelete = async () => {
     if (deleteConfirmId) {
-      await dispatch(deleteCompetitorAsync(deleteConfirmId))
-      setDeleteConfirmId(null)
-      // Refetch to update list
-      dispatch(fetchCompetitorsAsync())
+      try {
+        await dispatch(deleteCompetitorAsync(deleteConfirmId)).unwrap()
+        toast.success('Competitor deleted successfully')
+        setDeleteConfirmId(null)
+        // Refetch to update list
+        dispatch(fetchCompetitorsAsync())
+      } catch (error) {
+        toast.error('Failed to delete competitor')
+      }
     }
   }
 

@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import "./globals.css";
 import { StoreProvider } from "@/lib/StoreProvider";
 import { ThemeProvider } from "@/components/providers/theme-provider";
+import { Toaster } from "react-hot-toast";
 
 export const metadata: Metadata = {
   title: "AI Competitive Intelligence Platform",
@@ -22,7 +23,10 @@ export default function RootLayout({
           enableSystem
           disableTransitionOnChange
         >
-          <StoreProvider>{children}</StoreProvider>
+          <StoreProvider>
+            {children}
+            <Toaster position="top-right" />
+          </StoreProvider>
         </ThemeProvider>
       </body>
     </html>

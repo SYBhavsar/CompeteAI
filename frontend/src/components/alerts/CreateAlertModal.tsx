@@ -18,6 +18,7 @@ import {
   SelectValue,
 } from '@/components/ui/select'
 import { Input } from '@/components/ui/input'
+import toast from 'react-hot-toast'
 
 interface CreateAlertModalProps {
   isOpen: boolean
@@ -47,16 +48,21 @@ export default function CreateAlertModal({ isOpen, onClose }: CreateAlertModalPr
       conditions.keywords = keywords.split(',').map((k) => k.trim())
     }
 
-    await dispatch(
-      createAlertAsync({
-        competitor_id: competitorId !== 'all' ? parseInt(competitorId) : null,
-        alert_type: alertType,
-        conditions,
-        is_active: isActive,
-      })
-    )
+    try {
+      await dispatch(
+        createAlertAsync({
+          competitor_id: competitorId !== 'all' ? parseInt(competitorId) : null,
+          alert_type: alertType,
+          conditions,
+          is_active: isActive,
+        })
+      ).unwrap()
 
-    onClose()
+      toast.success('Alert created successfully')
+      onClose()
+    } catch (error) {
+      toast.error('Failed to create alert')
+    }
   }
 
   return (

@@ -11,6 +11,7 @@ import { TrashIcon, PencilIcon } from '@heroicons/react/24/outline'
 import CreateAlertModal from '@/components/alerts/CreateAlertModal'
 import EditAlertModal from '@/components/alerts/EditAlertModal'
 import { Alert } from '@/types'
+import toast from 'react-hot-toast'
 
 export default function AlertsPage() {
   const dispatch = useAppDispatch()
@@ -27,7 +28,12 @@ export default function AlertsPage() {
   }, [dispatch])
 
   const handleToggleStatus = async (id: number, currentStatus: boolean) => {
-    await dispatch(updateAlertAsync({ id, data: { is_active: !currentStatus } }))
+    try {
+      await dispatch(updateAlertAsync({ id, data: { is_active: !currentStatus } })).unwrap()
+      toast.success(currentStatus ? 'Alert deactivated' : 'Alert activated')
+    } catch (error) {
+      toast.error('Failed to update alert')
+    }
   }
 
   const handleEdit = (alert: Alert) => {
@@ -37,7 +43,12 @@ export default function AlertsPage() {
 
   const handleDelete = async (id: number) => {
     if (confirm('Are you sure you want to delete this alert?')) {
-      await dispatch(deleteAlertAsync(id))
+      try {
+        await dispatch(deleteAlertAsync(id)).unwrap()
+        toast.success('Alert deleted successfully')
+      } catch (error) {
+        toast.error('Failed to delete alert')
+      }
     }
   }
 

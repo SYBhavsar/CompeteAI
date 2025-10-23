@@ -19,6 +19,7 @@ import {
 } from '@/components/ui/select'
 import { Input } from '@/components/ui/input'
 import { Alert } from '@/types'
+import toast from 'react-hot-toast'
 
 interface EditAlertModalProps {
   alert: Alert | null
@@ -68,19 +69,24 @@ export default function EditAlertModal({ alert, isOpen, onClose }: EditAlertModa
       conditions.keywords = keywords.split(',').map((k) => k.trim())
     }
 
-    await dispatch(
-      updateAlertAsync({
-        id: alert.id,
-        data: {
-          competitor_id: competitorId !== 'all' ? parseInt(competitorId) : null,
-          alert_type: alertType,
-          conditions,
-          is_active: isActive,
-        },
-      })
-    )
+    try {
+      await dispatch(
+        updateAlertAsync({
+          id: alert.id,
+          data: {
+            competitor_id: competitorId !== 'all' ? parseInt(competitorId) : null,
+            alert_type: alertType,
+            conditions,
+            is_active: isActive,
+          },
+        })
+      ).unwrap()
 
-    onClose()
+      toast.success('Alert updated successfully')
+      onClose()
+    } catch (error) {
+      toast.error('Failed to update alert')
+    }
   }
 
   if (!alert) return null

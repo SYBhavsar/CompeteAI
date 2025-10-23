@@ -4,6 +4,7 @@ import ProtectedRoute from '@/components/auth/ProtectedRoute'
 import Sidebar from '@/components/layout/Sidebar'
 import Header from '@/components/layout/Header'
 import Breadcrumbs from '@/components/layout/Breadcrumbs'
+import ErrorBoundary from '@/components/error/ErrorBoundary'
 import useWebSocket from '@/hooks/useWebSocket'
 
 export default function DashboardLayout({
@@ -31,7 +32,9 @@ export default function DashboardLayout({
               {/* Breadcrumb navigation */}
               <Breadcrumbs />
 
-              {children}
+              <ErrorBoundary>
+                {children}
+              </ErrorBoundary>
             </div>
           </main>
         </div>
