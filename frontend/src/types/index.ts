@@ -83,6 +83,20 @@ export interface SearchHistory {
   executed_at: string
 }
 
+// Search types
+export interface SearchFilters {
+  dateFrom: string | null
+  dateTo: string | null
+  competitorIds: number[]
+  sentiment: string | null
+}
+
+export interface SearchResult extends Omit<ProcessedInsight, 'raw_content_id' | 'insights' | 'updated_at'> {
+  source: string
+  content: string
+  relevance_score?: number
+}
+
 // API Response types
 export interface ApiResponse<T> {
   data: T
