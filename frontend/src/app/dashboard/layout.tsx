@@ -1,13 +1,19 @@
+'use client'
+
 import ProtectedRoute from '@/components/auth/ProtectedRoute'
 import Sidebar from '@/components/layout/Sidebar'
 import Header from '@/components/layout/Header'
 import Breadcrumbs from '@/components/layout/Breadcrumbs'
+import useWebSocket from '@/hooks/useWebSocket'
 
 export default function DashboardLayout({
   children,
 }: {
   children: React.ReactNode
 }) {
+  // Connect to WebSocket for real-time notifications
+  useWebSocket()
+
   return (
     <ProtectedRoute>
       <div className="flex h-screen overflow-hidden bg-background">

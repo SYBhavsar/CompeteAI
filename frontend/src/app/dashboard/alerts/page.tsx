@@ -7,8 +7,10 @@ import { fetchCompetitorsAsync } from '@/features/competitors/competitorsSlice'
 import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
-import { TrashIcon } from '@heroicons/react/24/outline'
+import { TrashIcon, PencilIcon } from '@heroicons/react/24/outline'
 import CreateAlertModal from '@/components/alerts/CreateAlertModal'
+import EditAlertModal from '@/components/alerts/EditAlertModal'
+import { Alert } from '@/types'
 
 export default function AlertsPage() {
   const dispatch = useAppDispatch()
@@ -16,6 +18,8 @@ export default function AlertsPage() {
   const { competitors } = useAppSelector((state) => state.competitors)
 
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false)
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false)
+  const [selectedAlert, setSelectedAlert] = useState<Alert | null>(null)
 
   useEffect(() => {
     dispatch(fetchAlertsAsync())
@@ -24,6 +28,11 @@ export default function AlertsPage() {
 
   const handleToggleStatus = async (id: number, currentStatus: boolean) => {
     await dispatch(updateAlertAsync({ id, data: { is_active: !currentStatus } }))
+  }
+
+  const handleEdit = (alert: Alert) => {
+    setSelectedAlert(alert)
+    setIsEditModalOpen(true)
   }
 
   const handleDelete = async (id: number) => {
@@ -97,6 +106,14 @@ export default function AlertsPage() {
                   <Button
                     variant="outline"
                     size="sm"
+                    onClick={() => handleEdit(alert)}
+                    aria-label={`Edit alert ${alert.id}`}
+                  >
+                    <PencilIcon className="h-4 w-4" />
+                  </Button>
+                  <Button
+                    variant="outline"
+                    size="sm"
                     onClick={() => handleDelete(alert.id)}
                     aria-label={`Delete alert ${alert.id}`}
                   >
@@ -111,6 +128,16 @@ export default function AlertsPage() {
 
       {/* Create Alert Modal */}
       <CreateAlertModal isOpen={isCreateModalOpen} onClose={() => setIsCreateModalOpen(false)} />
+
+      {/* Edit Alert Modal */}
+      <EditAlertModal
+        alert={selectedAlert}
+        isOpen={isEditModalOpen}
+        onClose={() => {
+          setIsEditModalOpen(false)
+          setSelectedAlert(null)
+        }}
+      />
     </div>
   )
 }
