@@ -7,6 +7,7 @@ import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import api from '@/services/api'
+import toast from 'react-hot-toast'
 
 interface CompetitorComparison {
   id: number
@@ -57,6 +58,7 @@ export default function ComparePage() {
       setComparisonData(response.data)
     } catch (error) {
       console.error('Failed to fetch comparison:', error)
+      toast.error('Failed to fetch comparison data.')
     } finally {
       setLoading(false)
     }

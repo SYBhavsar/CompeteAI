@@ -17,6 +17,7 @@ import api from '@/services/api'
 import TrendChart from '@/components/charts/TrendChart'
 import SentimentChart from '@/components/charts/SentimentChart'
 import QualityScoreChart from '@/components/charts/QualityScoreChart'
+import toast from 'react-hot-toast'
 
 type TimeRange = '7' | '30' | '90'
 
@@ -48,6 +49,7 @@ export default function AnalyticsPage() {
       setTrendsData(response.data)
     } catch (error) {
       console.error('Failed to fetch trends:', error)
+      toast.error('Failed to fetch trends data.')
     } finally {
       setLoading(false)
     }
@@ -69,8 +71,10 @@ export default function AnalyticsPage() {
       link.download = `analytics-${new Date().toISOString()}.json`
       link.click()
       URL.revokeObjectURL(url)
+      toast.success('Analytics data exported successfully.')
     } catch (error) {
       console.error('Failed to export:', error)
+      toast.error('Failed to export analytics data.')
     }
   }
 

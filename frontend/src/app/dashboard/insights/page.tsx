@@ -17,6 +17,7 @@ import { ArrowDownTrayIcon, ChevronLeftIcon, ChevronRightIcon } from '@heroicons
 import { ProcessedInsight } from '@/types'
 import api from '@/services/api'
 import InsightDetailModal from '@/components/insights/InsightDetailModal'
+import toast from 'react-hot-toast'
 
 type SortOption = 'date' | 'quality_score'
 type SentimentFilter = 'all' | 'positive' | 'negative' | 'neutral'
@@ -63,20 +64,26 @@ export default function InsightsPage() {
     } catch (error) {
       console.error('Failed to fetch insights:', error)
       setInsights([])
+      toast.error('Failed to fetch insights.')
     } finally {
       setLoading(false)
     }
   }
 
   const handleExport = () => {
-    const dataStr = JSON.stringify(filteredAndSortedInsights, null, 2)
-    const dataBlob = new Blob([dataStr], { type: 'application/json' })
-    const url = URL.createObjectURL(dataBlob)
-    const link = document.createElement('a')
-    link.href = url
-    link.download = `insights-${new Date().toISOString()}.json`
-    link.click()
-    URL.revokeObjectURL(url)
+    try {
+      const dataStr = JSON.stringify(filteredAndSortedInsights, null, 2)
+      const dataBlob = new Blob([dataStr], { type: 'application/json' })
+      const url = URL.createObjectURL(dataBlob)
+      const link = document.createElement('a')
+      link.href = url
+      link.download = `insights-${new Date().toISOString()}.json`
+      link.click()
+      URL.revokeObjectURL(url)
+      toast.success('Insights exported successfully.')
+    } catch (error) {
+      toast.error('Failed to export insights.')
+    }
   }
 
   const filteredAndSortedInsights = insights

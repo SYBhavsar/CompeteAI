@@ -31,6 +31,7 @@ import {
   TabsList,
   TabsTrigger,
 } from '@/components/ui/tabs'
+import toast from 'react-hot-toast'
 
 type TabType = 'overview' | 'data-sources' | 'insights' | 'scraped-data'
 
@@ -78,6 +79,7 @@ export default function CompetitorDetailPage() {
         })
         .catch((err) => {
           console.error('Failed to fetch data sources:', err)
+          toast.error('Failed to fetch data sources.')
         })
 
       // Fetch insights
@@ -89,6 +91,7 @@ export default function CompetitorDetailPage() {
         })
         .catch((err) => {
           console.error('Failed to fetch insights:', err)
+          toast.error('Failed to fetch insights.')
         })
         .finally(() => {
           setInsightsLoading(false)
@@ -101,9 +104,14 @@ export default function CompetitorDetailPage() {
    */
   const handleDelete = async () => {
     if (competitorId) {
-      await dispatch(deleteCompetitorAsync(competitorId))
-      setIsDeleteModalOpen(false)
-      router.push('/dashboard/competitors')
+      try {
+        await dispatch(deleteCompetitorAsync(competitorId)).unwrap()
+        setIsDeleteModalOpen(false)
+        toast.success('Competitor deleted successfully.')
+        router.push('/dashboard/competitors')
+      } catch (error) {
+        toast.error('Failed to delete competitor.')
+      }
     }
   }
 

@@ -8,6 +8,7 @@ import { Badge } from '@/components/ui/badge'
 import { PlayIcon, TrashIcon } from '@heroicons/react/24/outline'
 import { SavedSearch } from '@/types'
 import api from '@/services/api'
+import toast from 'react-hot-toast'
 
 export default function SavedSearchesPage() {
   const router = useRouter()
@@ -25,6 +26,7 @@ export default function SavedSearchesPage() {
       setSavedSearches(response.data)
     } catch (error) {
       console.error('Failed to fetch saved searches:', error)
+      toast.error('Failed to fetch saved searches.')
     } finally {
       setLoading(false)
     }
@@ -39,8 +41,10 @@ export default function SavedSearchesPage() {
     try {
       await api.delete(`/search/saved/${id}`)
       setSavedSearches(savedSearches.filter((s) => s.id !== id))
+      toast.success('Saved search deleted.')
     } catch (error) {
       console.error('Failed to delete saved search:', error)
+      toast.error('Failed to delete saved search.')
     }
   }
 

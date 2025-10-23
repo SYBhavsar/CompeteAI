@@ -8,6 +8,7 @@ import DataSourceModal from './DataSourceModal'
 import DeleteConfirmModal from './DeleteConfirmModal'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
+import toast from 'react-hot-toast'
 import {
   Table,
   TableBody,
@@ -83,9 +84,14 @@ export default function DataSourcesManager({ competitorId }: DataSourcesManagerP
    */
   const handleDelete = async () => {
     if (deleteConfirmId) {
-      await dataSourcesService.delete(competitorId, deleteConfirmId)
-      setDeleteConfirmId(null)
-      fetchDataSources()
+      try {
+        await dataSourcesService.delete(competitorId, deleteConfirmId)
+        toast.success('Data source deleted successfully')
+        setDeleteConfirmId(null)
+        fetchDataSources()
+      } catch (error) {
+        toast.error('Failed to delete data source')
+      }
     }
   }
 
@@ -93,10 +99,15 @@ export default function DataSourcesManager({ competitorId }: DataSourcesManagerP
    * Handle toggling data source active status
    */
   const handleToggleActive = async (dataSource: DataSource) => {
-    await dataSourcesService.update(competitorId, dataSource.id, {
-      is_active: !dataSource.is_active,
-    })
-    fetchDataSources()
+    try {
+      await dataSourcesService.update(competitorId, dataSource.id, {
+        is_active: !dataSource.is_active,
+      })
+      toast.success(`Data source ${dataSource.is_active ? 'deactivated' : 'activated'}`)
+      fetchDataSources()
+    } catch (error) {
+      toast.error('Failed to toggle data source status')
+    }
   }
 
   /**

@@ -17,6 +17,7 @@ import {
   CardHeader,
   CardTitle,
 } from '@/components/ui/card'
+import toast from 'react-hot-toast'
 
 // Validation schema
 const loginSchema = z.object({
@@ -56,6 +57,7 @@ export default function LoginPage() {
   const onSubmit = async (data: LoginFormData) => {
     const result = await dispatch(loginAsync(data))
     if (loginAsync.fulfilled.match(result)) {
+      toast.success('Logged in successfully!')
       router.push('/dashboard')
     }
   }

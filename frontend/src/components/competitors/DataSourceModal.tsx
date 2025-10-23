@@ -9,6 +9,7 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Checkbox } from '@/components/ui/checkbox'
+import toast from 'react-hot-toast'
 
 import {
   Dialog,
@@ -79,8 +80,10 @@ export default function DataSourceModal({
   const handleFormSubmit = async (data: DataSourceFormData) => {
     try {
       await onSubmit(data)
+      toast.success(`Data source ${dataSource ? 'updated' : 'created'} successfully`)
       reset()
     } catch (error) {
+      toast.error(`Failed to ${dataSource ? 'update' : 'create'} data source`)
       console.error('Failed to save data source:', error)
     }
   }

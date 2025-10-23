@@ -8,6 +8,7 @@ import { Badge } from '@/components/ui/badge'
 import { PlayIcon, TrashIcon } from '@heroicons/react/24/outline'
 import { SearchHistory } from '@/types'
 import api from '@/services/api'
+import toast from 'react-hot-toast'
 
 export default function SearchHistoryPage() {
   const router = useRouter()
@@ -25,6 +26,7 @@ export default function SearchHistoryPage() {
       setSearchHistory(response.data)
     } catch (error) {
       console.error('Failed to fetch search history:', error)
+      toast.error('Failed to fetch search history.')
     } finally {
       setLoading(false)
     }
@@ -39,8 +41,10 @@ export default function SearchHistoryPage() {
     try {
       await api.delete('/search/history')
       setSearchHistory([])
+      toast.success('Search history cleared.')
     } catch (error) {
       console.error('Failed to clear search history:', error)
+      toast.error('Failed to clear search history.')
     }
   }
 

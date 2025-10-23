@@ -3,6 +3,7 @@
 import { useRouter } from 'next/navigation'
 import { useAppDispatch, useAppSelector } from '@/lib/hooks'
 import { logout, selectUser } from '@/features/auth/authSlice'
+import toast from 'react-hot-toast'
 import { UserCircleIcon, ArrowRightOnRectangleIcon, MagnifyingGlassIcon } from '@heroicons/react/24/outline'
 import NotificationDropdown from './NotificationDropdown'
 import { Input } from '@/components/ui/input'
@@ -25,6 +26,7 @@ export default function Header() {
    */
   const handleLogout = () => {
     dispatch(logout())
+    toast.success('Logged out successfully')
     router.push('/login')
   }
 

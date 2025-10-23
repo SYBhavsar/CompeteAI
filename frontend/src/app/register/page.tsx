@@ -18,6 +18,7 @@ import {
   CardHeader,
   CardTitle,
 } from '@/components/ui/card'
+import toast from 'react-hot-toast'
 
 // Validation schema
 const registerSchema = z.object({
@@ -71,6 +72,7 @@ export default function RegisterPage() {
     const { confirmPassword, terms, ...registerData } = data
     const result = await dispatch(registerAsync(registerData))
     if (registerAsync.fulfilled.match(result)) {
+      toast.success('Registration successful! Please log in.')
       router.push('/login')
     }
   }

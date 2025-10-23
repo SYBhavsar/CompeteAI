@@ -12,6 +12,7 @@ import SearchFilters from '@/components/search/SearchFilters'
 import SearchResultCard from '@/components/search/SearchResultCard'
 import { SearchResult, SearchFilters as SearchFiltersType } from '@/types'
 import api from '@/services/api'
+import toast from 'react-hot-toast'
 
 type SearchType = 'semantic' | 'traditional'
 
@@ -60,6 +61,7 @@ export default function SearchPage() {
       console.error('Search failed:', error)
       setResults([])
       setTotalResults(0)
+      toast.error('Search failed.')
     } finally {
       setLoading(false)
     }
@@ -68,17 +70,23 @@ export default function SearchPage() {
   const handleSaveSearch = () => {
     // TODO: Implement save search modal
     console.log('Save search')
+    toast.info('Save search functionality is not yet implemented.')
   }
 
   const handleExport = () => {
-    const dataStr = JSON.stringify(paginatedResults, null, 2)
-    const dataBlob = new Blob([dataStr], { type: 'application/json' })
-    const url = URL.createObjectURL(dataBlob)
-    const link = document.createElement('a')
-    link.href = url
-    link.download = `search-results-${new Date().toISOString()}.json`
-    link.click()
-    URL.revokeObjectURL(url)
+    try {
+      const dataStr = JSON.stringify(paginatedResults, null, 2)
+      const dataBlob = new Blob([dataStr], { type: 'application/json' })
+      const url = URL.createObjectURL(dataBlob)
+      const link = document.createElement('a')
+      link.href = url
+      link.download = `search-results-${new Date().toISOString()}.json`
+      link.click()
+      URL.revokeObjectURL(url)
+      toast.success('Search results exported successfully.')
+    } catch (error) {
+      toast.error('Failed to export search results.')
+    }
   }
 
   const totalPages = Math.ceil(totalResults / pageSize)

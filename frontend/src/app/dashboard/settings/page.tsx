@@ -16,6 +16,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select'
+import toast from 'react-hot-toast'
 
 export default function SettingsPage() {
   const dispatch = useAppDispatch()
@@ -33,7 +34,12 @@ export default function SettingsPage() {
 
   const handleProfileSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    await dispatch(updateUserAsync({ full_name: fullName }))
+    try {
+      await dispatch(updateUserAsync({ full_name: fullName })).unwrap()
+      toast.success('Profile updated successfully.')
+    } catch (error) {
+      toast.error('Failed to update profile.')
+    }
   }
 
   const handlePasswordSubmit = async (e: React.FormEvent) => {
@@ -62,8 +68,10 @@ export default function SettingsPage() {
       setCurrentPassword('')
       setNewPassword('')
       setConfirmPassword('')
+      toast.success('Password changed successfully.')
     } catch (error) {
       setPasswordError('Failed to change password')
+      toast.error('Failed to change password.')
     }
   }
 

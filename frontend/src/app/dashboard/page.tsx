@@ -8,13 +8,8 @@ import { selectUser } from '@/features/auth/authSlice'
 import MetricCard from '@/components/dashboard/MetricCard'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-import {
-  UserGroupIcon,
-  LightBulbIcon,
-  BellAlertIcon,
-  MagnifyingGlassIcon,
-  PlusIcon,
-} from '@heroicons/react/24/outline'
+import { PlusIcon } from '@heroicons/react/24/outline'
+import toast from 'react-hot-toast'
 
 export default function DashboardPage() {
   const router = useRouter()
@@ -27,7 +22,9 @@ export default function DashboardPage() {
     const fetchData = async () => {
       setLoading(true)
       try {
-        await dispatch(fetchCompetitorsAsync())
+        await dispatch(fetchCompetitorsAsync()).unwrap()
+      } catch (error) {
+        toast.error('Failed to fetch dashboard data.')
       } finally {
         setLoading(false)
       }
