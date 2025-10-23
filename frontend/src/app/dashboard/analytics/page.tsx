@@ -14,6 +14,9 @@ import {
 } from '@/components/ui/select'
 import { ArrowDownTrayIcon } from '@heroicons/react/24/outline'
 import api from '@/services/api'
+import TrendChart from '@/components/charts/TrendChart'
+import SentimentChart from '@/components/charts/SentimentChart'
+import QualityScoreChart from '@/components/charts/QualityScoreChart'
 
 type TimeRange = '7' | '30' | '90'
 
@@ -147,25 +150,19 @@ export default function AnalyticsPage() {
           {/* Trend Chart */}
           <Card className="p-6">
             <h2 className="text-xl font-semibold mb-4">Trend Analysis</h2>
-            <div className="h-64 flex items-center justify-center text-muted-foreground">
-              <p>Trend chart will be displayed here</p>
-            </div>
+            <TrendChart data={trendsData?.trend_data || []} />
           </Card>
 
           {/* Sentiment Distribution */}
           <Card className="p-6">
             <h2 className="text-xl font-semibold mb-4">Sentiment Distribution</h2>
-            <div className="h-64 flex items-center justify-center text-muted-foreground">
-              <p>Sentiment chart will be displayed here</p>
-            </div>
+            <SentimentChart data={trendsData?.sentiment_data || []} />
           </Card>
 
           {/* Quality Score */}
           <Card className="p-6">
             <h2 className="text-xl font-semibold mb-4">Quality Score Trends</h2>
-            <div className="h-64 flex items-center justify-center text-muted-foreground">
-              <p>Quality score chart will be displayed here</p>
-            </div>
+            <QualityScoreChart data={trendsData?.quality_data || []} />
           </Card>
         </>
       )}

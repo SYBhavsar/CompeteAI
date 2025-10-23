@@ -16,6 +16,7 @@ import {
 import { ArrowDownTrayIcon, ChevronLeftIcon, ChevronRightIcon } from '@heroicons/react/24/outline'
 import { ProcessedInsight } from '@/types'
 import api from '@/services/api'
+import InsightDetailModal from '@/components/insights/InsightDetailModal'
 
 type SortOption = 'date' | 'quality_score'
 type SentimentFilter = 'all' | 'positive' | 'negative' | 'neutral'
@@ -30,6 +31,8 @@ export default function InsightsPage() {
   const [insights, setInsights] = useState<ProcessedInsight[]>([])
   const [loading, setLoading] = useState(false)
   const [currentPage, setCurrentPage] = useState(1)
+  const [selectedInsight, setSelectedInsight] = useState<ProcessedInsight | null>(null)
+  const [isModalOpen, setIsModalOpen] = useState(false)
   const pageSize = 10
 
   useEffect(() => {
@@ -108,6 +111,16 @@ export default function InsightsPage() {
 
   const formatDate = (dateString: string) => {
     return new Date(dateString).toLocaleDateString()
+  }
+
+  const handleInsightClick = (insight: ProcessedInsight) => {
+    setSelectedInsight(insight)
+    setIsModalOpen(true)
+  }
+
+  const handleCloseModal = () => {
+    setIsModalOpen(false)
+    setSelectedInsight(null)
   }
 
   const getSentimentColor = (sentiment: string) => {
@@ -201,7 +214,11 @@ export default function InsightsPage() {
         <>
           <div className="space-y-4">
             {paginatedInsights.map((insight) => (
-              <Card key={insight.id} className="p-6">
+              <Card
+                key={insight.id}
+                className="p-6 cursor-pointer hover:bg-accent/50 transition-colors"
+                onClick={() => handleInsightClick(insight)}
+              >
                 <div className="space-y-4">
                   <div className="flex items-start justify-between">
                     <div className="flex-1">
@@ -256,6 +273,13 @@ export default function InsightsPage() {
           )}
         </>
       )}
+
+      {/* Insight Detail Modal */}
+      <InsightDetailModal
+        insight={selectedInsight}
+        isOpen={isModalOpen}
+        onClose={handleCloseModal}
+      />
     </div>
   )
 }
