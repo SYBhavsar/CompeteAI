@@ -134,7 +134,7 @@ describe('Search Page - Integration Tests', () => {
     const searchInput = screen.getByPlaceholderText(/search insights/i)
     await user.type(searchInput, 'test query')
 
-    const searchButton = screen.getByRole('button', { name: /search/i })
+    const searchButton = screen.getByRole('button', { name: 'Search' })
     await user.click(searchButton)
 
     await waitFor(() => {
@@ -158,11 +158,138 @@ describe('Search Page - Integration Tests', () => {
     const searchInput = screen.getByPlaceholderText(/search insights/i)
     await user.type(searchInput, 'nonexistent query')
 
-    const searchButton = screen.getByRole('button', { name: /search/i })
+    const searchButton = screen.getByRole('button', { name: 'Search' })
     await user.click(searchButton)
 
     await waitFor(() => {
       expect(screen.getByText(/no results found/i)).toBeInTheDocument()
+    })
+  })
+
+  it('should display pagination when results exceed page size', async () => {
+    const store = createTestStore()
+    const user = userEvent.setup()
+
+    const mockResults = Array.from({ length: 15 }, (_, i) => ({
+      id: i + 1,
+      content: `Test insight content ${i + 1}`,
+      sentiment: 'positive',
+      quality_score: 0.85,
+      source: 'competitor1.com',
+      created_at: '2024-01-01T00:00:00Z',
+    }))
+
+    mockApi.onGet('/competitors').reply(200, [])
+    mockApi.onPost('/search/semantic').reply(200, { results: mockResults, total: 15 })
+
+    render(
+      <Provider store={store}>
+        <SearchPage />
+      </Provider>
+    )
+
+    const searchInput = screen.getByPlaceholderText(/search insights/i)
+    await user.type(searchInput, 'test query')
+
+    const searchButton = screen.getByRole('button', { name: 'Search' })
+    await user.click(searchButton)
+
+    await waitFor(() => {
+      expect(screen.getByText('Test insight content 1')).toBeInTheDocument()
+    })
+
+    expect(screen.getByText(/page 1 of 2/i)).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: /next/i })).toBeInTheDocument()
+  })
+
+  it('should navigate to next page', async () => {
+    const store = createTestStore()
+    const user = userEvent.setup()
+
+    const mockResults = Array.from({ length: 15 }, (_, i) => ({
+      id: i + 1,
+      content: `Test insight content ${i + 1}`,
+      sentiment: 'positive',
+      quality_score: 0.85,
+      source: 'competitor1.com',
+      created_at: '2024-01-01T00:00:00Z',
+    }))
+
+    mockApi.onGet('/competitors').reply(200, [])
+    mockApi.onPost('/search/semantic').reply(200, { results: mockResults, total: 15 })
+
+    render(
+      <Provider store={store}>
+        <SearchPage />
+      </Provider>
+    )
+
+    const searchInput = screen.getByPlaceholderText(/search insights/i)
+    await user.type(searchInput, 'test query')
+
+    const searchButton = screen.getByRole('button', { name: 'Search' })
+    await user.click(searchButton)
+
+    await waitFor(() => {
+      expect(screen.getByText('Test insight content 1')).toBeInTheDocument()
+    })
+
+    const nextButton = screen.getByRole('button', { name: /next/i })
+    await user.click(nextButton)
+
+    await waitFor(() => {
+      expect(screen.getByText('Test insight content 11')).toBeInTheDocument()
+    })
+
+    expect(screen.getByText(/page 2 of 2/i)).toBeInTheDocument()
+  })
+
+  it('should have save search button', async () => {
+    const store = createTestStore()
+
+    mockApi.onGet('/competitors').reply(200, [])
+
+    render(
+      <Provider store={store}>
+        <SearchPage />
+      </Provider>
+    )
+
+    expect(screen.getByRole('button', { name: /save search/i })).toBeInTheDocument()
+  })
+
+  it('should have export results button when results exist', async () => {
+    const store = createTestStore()
+    const user = userEvent.setup()
+
+    const mockResults = [
+      {
+        id: 1,
+        content: 'Test insight content',
+        sentiment: 'positive',
+        quality_score: 0.85,
+        source: 'competitor1.com',
+        created_at: '2024-01-01T00:00:00Z',
+      },
+    ]
+
+    mockApi.onGet('/competitors').reply(200, [])
+    mockApi.onPost('/search/semantic').reply(200, { results: mockResults, total: 1 })
+
+    render(
+      <Provider store={store}>
+        <SearchPage />
+      </Provider>
+    )
+
+    const searchInput = screen.getByPlaceholderText(/search insights/i)
+    await user.type(searchInput, 'test query')
+
+    const searchButton = screen.getByRole('button', { name: 'Search' })
+    await user.click(searchButton)
+
+    await waitFor(() => {
+      expect(screen.getByRole('button', { name: /export/i })).toBeInTheDocument()
     })
   })
 })
