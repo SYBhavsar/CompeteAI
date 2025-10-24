@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { useRouter } from 'next/navigation'
 import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
@@ -15,11 +15,7 @@ export default function SavedSearchesPage() {
   const [savedSearches, setSavedSearches] = useState<SavedSearch[]>([])
   const [loading, setLoading] = useState(true)
 
-  useEffect(() => {
-    fetchSavedSearches()
-  }, [])
-
-  const fetchSavedSearches = async () => {
+  const fetchSavedSearches = useCallback(async () => {
     try {
       setLoading(true)
       const response = await api.get('/search/saved')
@@ -30,27 +26,31 @@ export default function SavedSearchesPage() {
     } finally {
       setLoading(false)
     }
-  }
+  }, [])
 
-  const handleExecute = (search: SavedSearch) => {
+  useEffect(() => {
+    fetchSavedSearches()
+  }, [fetchSavedSearches])
+
+  const handleExecute = useCallback((search: SavedSearch) => {
     // Navigate to search page with query params
     router.push('/dashboard/search')
-  }
+  }, [router])
 
-  const handleDelete = async (id: number) => {
+  const handleDelete = useCallback(async (id: number) => {
     try {
       await api.delete(`/search/saved/${id}`)
-      setSavedSearches(savedSearches.filter((s) => s.id !== id))
+      setSavedSearches((prev) => prev.filter((s) => s.id !== id))
       toast.success('Saved search deleted.')
     } catch (error) {
       console.error('Failed to delete saved search:', error)
       toast.error('Failed to delete saved search.')
     }
-  }
+  }, [])
 
-  const formatDate = (dateString: string) => {
+  const formatDate = useCallback((dateString: string) => {
     return new Date(dateString).toLocaleDateString()
-  }
+  }, [])
 
   if (loading) {
     return (

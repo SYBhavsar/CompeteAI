@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback, useMemo, lazy, Suspense } from 'react'
 import { useAppSelector, useAppDispatch } from '@/lib/hooks'
 import { usePageTitle } from '@/hooks/usePageTitle'
 import { fetchCompetitorsAsync } from '@/features/competitors/competitorsSlice'
@@ -17,7 +17,10 @@ import {
 import { ArrowDownTrayIcon, ChevronLeftIcon, ChevronRightIcon } from '@heroicons/react/24/outline'
 import { ProcessedInsight } from '@/types'
 import api from '@/services/api'
-import InsightDetailModal from '@/components/insights/InsightDetailModal'
+
+// Lazy load modal for better performance
+const InsightDetailModal = lazy(() => import('@/components/insights/InsightDetailModal'))
+
 import CardListSkeleton from '@/components/ui/CardListSkeleton'
 import toast from 'react-hot-toast'
 
@@ -57,7 +60,7 @@ export default function InsightsPage() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [selectedCompetitorId])
 
-  const fetchInsights = async () => {
+  const fetchInsights = useCallback(async () => {
     if (!selectedCompetitorId) return
 
     try {
@@ -72,9 +75,24 @@ export default function InsightsPage() {
     } finally {
       setLoading(false)
     }
-  }
+  }, [selectedCompetitorId])
 
-  const handleExport = () => {
+  const filteredAndSortedInsights = useMemo(() => {
+    return insights
+      .filter((insight) => {
+        if (sentimentFilter === 'all') return true
+        return insight.sentiment === sentimentFilter
+      })
+      .sort((a, b) => {
+        if (sortBy === 'date') {
+          return new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
+        } else {
+          return (b.quality_score || 0) - (a.quality_score || 0)
+        }
+      })
+  }, [insights, sentimentFilter, sortBy])
+
+  const handleExport = useCallback(() => {
     try {
       const dataStr = JSON.stringify(filteredAndSortedInsights, null, 2)
       const dataBlob = new Blob([dataStr], { type: 'application/json' })
@@ -88,53 +106,40 @@ export default function InsightsPage() {
     } catch (error) {
       toast.error('Failed to export insights.')
     }
-  }
-
-  const filteredAndSortedInsights = insights
-    .filter((insight) => {
-      if (sentimentFilter === 'all') return true
-      return insight.sentiment === sentimentFilter
-    })
-    .sort((a, b) => {
-      if (sortBy === 'date') {
-        return new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
-      } else {
-        return (b.quality_score || 0) - (a.quality_score || 0)
-      }
-    })
+  }, [filteredAndSortedInsights])
 
   const totalPages = Math.ceil(filteredAndSortedInsights.length / pageSize)
   const startIndex = (currentPage - 1) * pageSize
   const endIndex = startIndex + pageSize
   const paginatedInsights = filteredAndSortedInsights.slice(startIndex, endIndex)
 
-  const handleNextPage = () => {
+  const handleNextPage = useCallback(() => {
     if (currentPage < totalPages) {
       setCurrentPage(currentPage + 1)
     }
-  }
+  }, [currentPage, totalPages])
 
-  const handlePrevPage = () => {
+  const handlePrevPage = useCallback(() => {
     if (currentPage > 1) {
       setCurrentPage(currentPage - 1)
     }
-  }
+  }, [currentPage])
 
-  const formatDate = (dateString: string) => {
+  const formatDate = useCallback((dateString: string) => {
     return new Date(dateString).toLocaleDateString()
-  }
+  }, [])
 
-  const handleInsightClick = (insight: ProcessedInsight) => {
+  const handleInsightClick = useCallback((insight: ProcessedInsight) => {
     setSelectedInsight(insight)
     setIsModalOpen(true)
-  }
+  }, [])
 
-  const handleCloseModal = () => {
+  const handleCloseModal = useCallback(() => {
     setIsModalOpen(false)
     setSelectedInsight(null)
-  }
+  }, [])
 
-  const getSentimentColor = (sentiment: string) => {
+  const getSentimentColor = useCallback((sentiment: string) => {
     switch (sentiment) {
       case 'positive':
         return 'default'
@@ -145,7 +150,7 @@ export default function InsightsPage() {
       default:
         return 'secondary'
     }
-  }
+  }, [])
 
   return (
     <div className="space-y-6">
@@ -284,11 +289,15 @@ export default function InsightsPage() {
       )}
 
       {/* Insight Detail Modal */}
-      <InsightDetailModal
-        insight={selectedInsight}
-        isOpen={isModalOpen}
-        onClose={handleCloseModal}
-      />
+      {isModalOpen && (
+        <Suspense fallback={null}>
+          <InsightDetailModal
+            insight={selectedInsight}
+            isOpen={isModalOpen}
+            onClose={handleCloseModal}
+          />
+        </Suspense>
+      )}
     </div>
   )
 }

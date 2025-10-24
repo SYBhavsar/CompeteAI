@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useCallback, useMemo, lazy, Suspense } from 'react'
 import { useRouter, useParams } from 'next/navigation'
 import { useAppDispatch, useAppSelector } from '@/lib/hooks'
 import {
@@ -14,9 +14,11 @@ import { dataSourcesService } from '@/services/dataSourcesService'
 import { insightsService } from '@/services/insightsService'
 import { PencilIcon, TrashIcon } from '@heroicons/react/24/outline'
 import { format } from 'date-fns'
-import CompetitorModal from '@/components/competitors/CompetitorModal'
-import DeleteConfirmModal from '@/components/competitors/DeleteConfirmModal'
-import DataSourcesManager from '@/components/competitors/DataSourcesManager'
+
+// Lazy load components for better performance
+const CompetitorModal = lazy(() => import('@/components/competitors/CompetitorModal'))
+const DeleteConfirmModal = lazy(() => import('@/components/competitors/DeleteConfirmModal'))
+const DataSourcesManager = lazy(() => import('@/components/competitors/DataSourcesManager'))
 import { DataSource, ProcessedInsight } from '@/types'
 import { Button } from '@/components/ui/button'
 import {
@@ -102,7 +104,7 @@ export default function CompetitorDetailPage() {
   /**
    * Handle delete competitor
    */
-  const handleDelete = async () => {
+  const handleDelete = useCallback(async () => {
     if (competitorId) {
       try {
         await dispatch(deleteCompetitorAsync(competitorId)).unwrap()
@@ -113,12 +115,12 @@ export default function CompetitorDetailPage() {
         toast.error('Failed to delete competitor.')
       }
     }
-  }
+  }, [competitorId, dispatch, router])
 
   /**
    * Get last scraped date from data sources
    */
-  const getLastScrapedDate = () => {
+  const getLastScrapedDate = useMemo(() => {
     if (dataSources.length === 0) return null
 
     const scrapedDates = dataSources
@@ -128,7 +130,7 @@ export default function CompetitorDetailPage() {
     if (scrapedDates.length === 0) return null
 
     return new Date(Math.max(...scrapedDates.map((d) => d.getTime())))
-  }
+  }, [dataSources])
 
   /**
    * Show loading state
@@ -156,7 +158,7 @@ export default function CompetitorDetailPage() {
     return null
   }
 
-  const lastScraped = getLastScrapedDate()
+  const lastScraped = getLastScrapedDate
 
   return (
     <div className="space-y-6">
@@ -262,7 +264,9 @@ export default function CompetitorDetailPage() {
           </Card>
         </TabsContent>
         <TabsContent value="data-sources">
-          <DataSourcesManager competitorId={competitorId} />
+          <Suspense fallback={<div className="p-6 text-center">Loading data sources...</div>}>
+            <DataSourcesManager competitorId={competitorId} />
+          </Suspense>
         </TabsContent>
         <TabsContent value="insights">
           <Card>
@@ -302,24 +306,32 @@ export default function CompetitorDetailPage() {
       </Tabs>
 
       {/* Edit Modal */}
-      <CompetitorModal
-        isOpen={isEditModalOpen}
-        onClose={() => setIsEditModalOpen(false)}
-        onSuccess={() => {
-          setIsEditModalOpen(false)
-          dispatch(fetchCompetitorByIdAsync(competitorId))
-        }}
-        competitor={competitor}
-      />
+      {isEditModalOpen && (
+        <Suspense fallback={null}>
+          <CompetitorModal
+            isOpen={isEditModalOpen}
+            onClose={() => setIsEditModalOpen(false)}
+            onSuccess={() => {
+              setIsEditModalOpen(false)
+              dispatch(fetchCompetitorByIdAsync(competitorId))
+            }}
+            competitor={competitor}
+          />
+        </Suspense>
+      )}
 
       {/* Delete Confirmation Modal */}
-      <DeleteConfirmModal
-        isOpen={isDeleteModalOpen}
-        onClose={() => setIsDeleteModalOpen(false)}
-        onConfirm={handleDelete}
-        title="Delete Competitor"
-        message="Are you sure you want to delete this competitor? This action cannot be undone and will delete all associated data sources and insights."
-      />
+      {isDeleteModalOpen && (
+        <Suspense fallback={null}>
+          <DeleteConfirmModal
+            isOpen={isDeleteModalOpen}
+            onClose={() => setIsDeleteModalOpen(false)}
+            onConfirm={handleDelete}
+            title="Delete Competitor"
+            message="Are you sure you want to delete this competitor? This action cannot be undone and will delete all associated data sources and insights."
+          />
+        </Suspense>
+      )}
     </div>
   )
 }

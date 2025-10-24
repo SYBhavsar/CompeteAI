@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useCallback } from 'react'
 import { useRouter } from 'next/navigation'
 import { useAppDispatch, useAppSelector } from '@/lib/hooks'
 import { fetchCompetitorsAsync, selectCompetitors } from '@/features/competitors/competitorsSlice'
@@ -35,13 +35,13 @@ export default function DashboardPage() {
     fetchData()
   }, [dispatch])
 
-  const handleAddCompetitor = () => {
+  const handleAddCompetitor = useCallback(() => {
     router.push('/dashboard/competitors')
-  }
+  }, [router])
 
-  const handleNewSearch = () => {
+  const handleNewSearch = useCallback(() => {
     router.push('/dashboard/search')
-  }
+  }, [router])
 
   return (
     <div className="space-y-6">

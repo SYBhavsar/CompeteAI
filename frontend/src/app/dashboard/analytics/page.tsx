@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback, lazy, Suspense } from 'react'
 import { useAppSelector, useAppDispatch } from '@/lib/hooks'
 import { usePageTitle } from '@/hooks/usePageTitle'
 import { fetchCompetitorsAsync } from '@/features/competitors/competitorsSlice'
@@ -15,9 +15,12 @@ import {
 } from '@/components/ui/select'
 import { ArrowDownTrayIcon } from '@heroicons/react/24/outline'
 import api from '@/services/api'
-import TrendChart from '@/components/charts/TrendChart'
-import SentimentChart from '@/components/charts/SentimentChart'
-import QualityScoreChart from '@/components/charts/QualityScoreChart'
+
+// Lazy load chart components for better performance
+const TrendChart = lazy(() => import('@/components/charts/TrendChart'))
+const SentimentChart = lazy(() => import('@/components/charts/SentimentChart'))
+const QualityScoreChart = lazy(() => import('@/components/charts/QualityScoreChart'))
+
 import ChartSkeleton from '@/components/ui/ChartSkeleton'
 import toast from 'react-hot-toast'
 
@@ -38,11 +41,7 @@ export default function AnalyticsPage() {
     dispatch(fetchCompetitorsAsync())
   }, [dispatch])
 
-  useEffect(() => {
-    fetchTrendsData()
-  }, [timeRange, selectedCompetitorId])
-
-  const fetchTrendsData = async () => {
+  const fetchTrendsData = useCallback(async () => {
     try {
       setLoading(true)
       const params: any = { days: timeRange }
@@ -57,9 +56,13 @@ export default function AnalyticsPage() {
     } finally {
       setLoading(false)
     }
-  }
+  }, [timeRange, selectedCompetitorId])
 
-  const handleExport = async () => {
+  useEffect(() => {
+    fetchTrendsData()
+  }, [fetchTrendsData])
+
+  const handleExport = useCallback(async () => {
     try {
       const params: any = { days: timeRange }
       if (selectedCompetitorId !== 'all') {
@@ -80,7 +83,7 @@ export default function AnalyticsPage() {
       console.error('Failed to export:', error)
       toast.error('Failed to export analytics data.')
     }
-  }
+  }, [timeRange, selectedCompetitorId])
 
   return (
     <div className="space-y-6">
@@ -158,22 +161,28 @@ export default function AnalyticsPage() {
       ) : (
         <>
           {/* Trend Chart */}
-          <Card className="p-6">
-            <h2 className="text-xl font-semibold mb-4">Trend Analysis</h2>
-            <TrendChart data={trendsData?.trend_data || []} />
-          </Card>
+          <Suspense fallback={<ChartSkeleton />}>
+            <Card className="p-6">
+              <h2 className="text-xl font-semibold mb-4">Trend Analysis</h2>
+              <TrendChart data={trendsData?.trend_data || []} />
+            </Card>
+          </Suspense>
 
           {/* Sentiment Distribution */}
-          <Card className="p-6">
-            <h2 className="text-xl font-semibold mb-4">Sentiment Distribution</h2>
-            <SentimentChart data={trendsData?.sentiment_data || []} />
-          </Card>
+          <Suspense fallback={<ChartSkeleton />}>
+            <Card className="p-6">
+              <h2 className="text-xl font-semibold mb-4">Sentiment Distribution</h2>
+              <SentimentChart data={trendsData?.sentiment_data || []} />
+            </Card>
+          </Suspense>
 
           {/* Quality Score */}
-          <Card className="p-6">
-            <h2 className="text-xl font-semibold mb-4">Quality Score Trends</h2>
-            <QualityScoreChart data={trendsData?.quality_data || []} />
-          </Card>
+          <Suspense fallback={<ChartSkeleton />}>
+            <Card className="p-6">
+              <h2 className="text-xl font-semibold mb-4">Quality Score Trends</h2>
+              <QualityScoreChart data={trendsData?.quality_data || []} />
+            </Card>
+          </Suspense>
         </>
       )}
     </div>

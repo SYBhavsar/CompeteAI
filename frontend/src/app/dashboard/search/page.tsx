@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback, useMemo } from 'react'
 import { useRouter } from 'next/navigation'
 import { useAppSelector, useAppDispatch } from '@/lib/hooks'
 import { usePageTitle } from '@/hooks/usePageTitle'
@@ -44,7 +44,7 @@ export default function SearchPage() {
     dispatch(fetchCompetitorsAsync())
   }, [dispatch])
 
-  const handleSearch = async () => {
+  const handleSearch = useCallback(async () => {
     if (!query.trim()) return
 
     setLoading(true)
@@ -69,15 +69,23 @@ export default function SearchPage() {
     } finally {
       setLoading(false)
     }
-  }
+  }, [query, searchType])
 
-  const handleSaveSearch = () => {
+  const handleSaveSearch = useCallback(() => {
     // TODO: Implement save search modal
     console.log('Save search')
     toast.info('Save search functionality is not yet implemented.')
-  }
+  }, [])
 
-  const handleExport = () => {
+  const totalPages = useMemo(() => Math.ceil(totalResults / pageSize), [totalResults, pageSize])
+
+  const paginatedResults = useMemo(() => {
+    const startIndex = (currentPage - 1) * pageSize
+    const endIndex = startIndex + pageSize
+    return results.slice(startIndex, endIndex)
+  }, [results, currentPage, pageSize])
+
+  const handleExport = useCallback(() => {
     try {
       const dataStr = JSON.stringify(paginatedResults, null, 2)
       const dataBlob = new Blob([dataStr], { type: 'application/json' })
@@ -91,24 +99,19 @@ export default function SearchPage() {
     } catch (error) {
       toast.error('Failed to export search results.')
     }
-  }
+  }, [paginatedResults])
 
-  const totalPages = Math.ceil(totalResults / pageSize)
-  const startIndex = (currentPage - 1) * pageSize
-  const endIndex = startIndex + pageSize
-  const paginatedResults = results.slice(startIndex, endIndex)
-
-  const handleNextPage = () => {
+  const handleNextPage = useCallback(() => {
     if (currentPage < totalPages) {
       setCurrentPage(currentPage + 1)
     }
-  }
+  }, [currentPage, totalPages])
 
-  const handlePrevPage = () => {
+  const handlePrevPage = useCallback(() => {
     if (currentPage > 1) {
       setCurrentPage(currentPage - 1)
     }
-  }
+  }, [currentPage])
 
   return (
     <div className="space-y-6">

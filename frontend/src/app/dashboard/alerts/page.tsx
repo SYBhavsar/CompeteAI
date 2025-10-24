@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback, lazy, Suspense } from 'react'
 import { useAppSelector, useAppDispatch } from '@/lib/hooks'
 import { usePageTitle } from '@/hooks/usePageTitle'
 import { fetchAlertsAsync, updateAlertAsync, deleteAlertAsync } from '@/features/alerts/alertsSlice'
@@ -9,8 +9,11 @@ import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { TrashIcon, PencilIcon } from '@heroicons/react/24/outline'
-import CreateAlertModal from '@/components/alerts/CreateAlertModal'
-import EditAlertModal from '@/components/alerts/EditAlertModal'
+
+// Lazy load modal components for better performance
+const CreateAlertModal = lazy(() => import('@/components/alerts/CreateAlertModal'))
+const EditAlertModal = lazy(() => import('@/components/alerts/EditAlertModal'))
+
 import CardListSkeleton from '@/components/ui/CardListSkeleton'
 import { Alert } from '@/types'
 import toast from 'react-hot-toast'
@@ -31,21 +34,21 @@ export default function AlertsPage() {
     dispatch(fetchCompetitorsAsync())
   }, [dispatch])
 
-  const handleToggleStatus = async (id: number, currentStatus: boolean) => {
+  const handleToggleStatus = useCallback(async (id: number, currentStatus: boolean) => {
     try {
       await dispatch(updateAlertAsync({ id, data: { is_active: !currentStatus } })).unwrap()
       toast.success(currentStatus ? 'Alert deactivated' : 'Alert activated')
     } catch (error) {
       toast.error('Failed to update alert')
     }
-  }
+  }, [dispatch])
 
-  const handleEdit = (alert: Alert) => {
+  const handleEdit = useCallback((alert: Alert) => {
     setSelectedAlert(alert)
     setIsEditModalOpen(true)
-  }
+  }, [])
 
-  const handleDelete = async (id: number) => {
+  const handleDelete = useCallback(async (id: number) => {
     if (confirm('Are you sure you want to delete this alert?')) {
       try {
         await dispatch(deleteAlertAsync(id)).unwrap()
@@ -54,7 +57,7 @@ export default function AlertsPage() {
         toast.error('Failed to delete alert')
       }
     }
-  }
+  }, [dispatch])
 
   const getCompetitorName = (competitorId: number | null) => {
     if (!competitorId) return 'All Competitors'
@@ -140,17 +143,25 @@ export default function AlertsPage() {
       )}
 
       {/* Create Alert Modal */}
-      <CreateAlertModal isOpen={isCreateModalOpen} onClose={() => setIsCreateModalOpen(false)} />
+      {isCreateModalOpen && (
+        <Suspense fallback={null}>
+          <CreateAlertModal isOpen={isCreateModalOpen} onClose={() => setIsCreateModalOpen(false)} />
+        </Suspense>
+      )}
 
       {/* Edit Alert Modal */}
-      <EditAlertModal
-        alert={selectedAlert}
-        isOpen={isEditModalOpen}
-        onClose={() => {
-          setIsEditModalOpen(false)
-          setSelectedAlert(null)
-        }}
-      />
+      {isEditModalOpen && (
+        <Suspense fallback={null}>
+          <EditAlertModal
+            alert={selectedAlert}
+            isOpen={isEditModalOpen}
+            onClose={() => {
+              setIsEditModalOpen(false)
+              setSelectedAlert(null)
+            }}
+          />
+        </Suspense>
+      )}
     </div>
   )
 }

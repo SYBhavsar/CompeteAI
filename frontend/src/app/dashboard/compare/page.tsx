@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { useAppSelector, useAppDispatch } from '@/lib/hooks'
 import { fetchCompetitorsAsync } from '@/features/competitors/competitorsSlice'
 import { Button } from '@/components/ui/button'
@@ -38,15 +38,18 @@ export default function ComparePage() {
     dispatch(fetchCompetitorsAsync())
   }, [dispatch])
 
-  const handleToggleCompetitor = (id: number) => {
-    if (selectedIds.includes(id)) {
-      setSelectedIds(selectedIds.filter((cid) => cid !== id))
-    } else if (selectedIds.length < 4) {
-      setSelectedIds([...selectedIds, id])
-    }
-  }
+  const handleToggleCompetitor = useCallback((id: number) => {
+    setSelectedIds((prevIds) => {
+      if (prevIds.includes(id)) {
+        return prevIds.filter((cid) => cid !== id)
+      } else if (prevIds.length < 4) {
+        return [...prevIds, id]
+      }
+      return prevIds
+    })
+  }, [])
 
-  const handleCompare = async () => {
+  const handleCompare = useCallback(async () => {
     if (selectedIds.length < 2) return
 
     try {
@@ -63,7 +66,7 @@ export default function ComparePage() {
     } finally {
       setLoading(false)
     }
-  }
+  }, [selectedIds])
 
   return (
     <div className="space-y-6">

@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, memo } from 'react'
 import { Card } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
@@ -11,7 +11,11 @@ interface SearchResultCardProps {
   searchType?: 'semantic' | 'traditional'
 }
 
-export default function SearchResultCard({ result, searchType }: SearchResultCardProps) {
+/**
+ * Displays a search result with content, sentiment, and metadata.
+ * Memoized to prevent unnecessary re-renders in search result lists.
+ */
+const SearchResultCard = memo(function SearchResultCard({ result, searchType }: SearchResultCardProps) {
   const [isExpanded, setIsExpanded] = useState(false)
   const shouldShowExpand = result.content.length > 200
 
@@ -68,4 +72,6 @@ export default function SearchResultCard({ result, searchType }: SearchResultCar
       </div>
     </Card>
   )
-}
+})
+
+export default SearchResultCard

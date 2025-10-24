@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback, useMemo } from 'react'
 import { useAppSelector, useAppDispatch } from '@/lib/hooks'
 import { fetchNotificationsAsync, markAsReadAsync } from '@/features/alerts/alertsSlice'
 import { Button } from '@/components/ui/button'
@@ -22,24 +22,26 @@ export default function NotificationsPage() {
     dispatch(fetchNotificationsAsync())
   }, [dispatch])
 
-  const handleMarkAsRead = async (id: number) => {
+  const handleMarkAsRead = useCallback(async (id: number) => {
     try {
       await dispatch(markAsReadAsync(id)).unwrap()
       toast.success('Marked as read')
     } catch (error) {
       toast.error('Failed to mark as read')
     }
-  }
+  }, [dispatch])
 
-  const filteredNotifications = notifications.filter((notification) => {
-    if (filter === 'unread') return !notification.is_read
-    if (filter === 'read') return notification.is_read
-    return true
-  })
+  const filteredNotifications = useMemo(() => {
+    return notifications.filter((notification) => {
+      if (filter === 'unread') return !notification.is_read
+      if (filter === 'read') return notification.is_read
+      return true
+    })
+  }, [notifications, filter])
 
-  const formatTime = (dateString: string) => {
+  const formatTime = useCallback((dateString: string) => {
     return formatDistanceToNow(new Date(dateString), { addSuffix: true })
-  }
+  }, [])
 
   return (
     <div className="space-y-6">

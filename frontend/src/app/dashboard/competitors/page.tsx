@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useState, useMemo } from 'react'
+import { useEffect, useState, useMemo, useCallback, lazy, Suspense } from 'react'
 import { useRouter } from 'next/navigation'
 import { useAppDispatch, useAppSelector } from '@/lib/hooks'
 import { usePageTitle } from '@/hooks/usePageTitle'
@@ -13,8 +13,10 @@ import {
 } from '@/features/competitors/competitorsSlice'
 import { PlusIcon, EyeIcon, TrashIcon } from '@heroicons/react/24/outline'
 import { format } from 'date-fns'
-import CompetitorModal from '@/components/competitors/CompetitorModal'
-import DeleteConfirmModal from '@/components/competitors/DeleteConfirmModal'
+
+// Lazy load modal components for better performance
+const CompetitorModal = lazy(() => import('@/components/competitors/CompetitorModal'))
+const DeleteConfirmModal = lazy(() => import('@/components/competitors/DeleteConfirmModal'))
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import {
@@ -87,14 +89,14 @@ export default function CompetitorsPage() {
   /**
    * Handle view competitor details
    */
-  const handleView = (id: number) => {
+  const handleView = useCallback((id: number) => {
     router.push(`/dashboard/competitors/${id}`)
-  }
+  }, [router])
 
   /**
    * Handle delete competitor
    */
-  const handleDelete = async () => {
+  const handleDelete = useCallback(async () => {
     if (deleteConfirmId) {
       try {
         await dispatch(deleteCompetitorAsync(deleteConfirmId)).unwrap()
@@ -106,7 +108,7 @@ export default function CompetitorsPage() {
         toast.error('Failed to delete competitor')
       }
     }
-  }
+  }, [deleteConfirmId, dispatch])
 
   /**
    * Show loading state
@@ -255,23 +257,31 @@ export default function CompetitorsPage() {
       )}
 
       {/* Add Competitor Modal */}
-      <CompetitorModal
-        isOpen={isAddModalOpen}
-        onClose={() => setIsAddModalOpen(false)}
-        onSuccess={() => {
-          setIsAddModalOpen(false)
-          dispatch(fetchCompetitorsAsync())
-        }}
-      />
+      {isAddModalOpen && (
+        <Suspense fallback={null}>
+          <CompetitorModal
+            isOpen={isAddModalOpen}
+            onClose={() => setIsAddModalOpen(false)}
+            onSuccess={() => {
+              setIsAddModalOpen(false)
+              dispatch(fetchCompetitorsAsync())
+            }}
+          />
+        </Suspense>
+      )}
 
       {/* Delete Confirmation Modal */}
-      <DeleteConfirmModal
-        isOpen={deleteConfirmId !== null}
-        onClose={() => setDeleteConfirmId(null)}
-        onConfirm={handleDelete}
-        title="Delete Competitor"
-        message="Are you sure you want to delete this competitor? This action cannot be undone."
-      />
+      {deleteConfirmId !== null && (
+        <Suspense fallback={null}>
+          <DeleteConfirmModal
+            isOpen={deleteConfirmId !== null}
+            onClose={() => setDeleteConfirmId(null)}
+            onConfirm={handleDelete}
+            title="Delete Competitor"
+            message="Are you sure you want to delete this competitor? This action cannot be undone."
+          />
+        </Suspense>
+      )}
     </div>
   )
 }

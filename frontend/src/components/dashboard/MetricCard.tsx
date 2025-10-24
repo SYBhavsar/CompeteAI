@@ -1,3 +1,4 @@
+import { memo } from 'react'
 import { ArrowUpIcon, ArrowDownIcon } from '@heroicons/react/24/outline'
 import { Card, CardContent } from '@/components/ui/card'
 import { Skeleton } from '@/components/ui/skeleton'
@@ -20,8 +21,9 @@ export interface MetricCardProps {
 /**
  * Displays a key metric with icon, title, value, and optional trend indicator.
  * Used on dashboard pages to show important statistics.
+ * Memoized to prevent unnecessary re-renders.
  */
-export default function MetricCard({
+const MetricCard = memo(function MetricCard({
   icon,
   title,
   value,
@@ -82,5 +84,7 @@ export default function MetricCard({
       </CardContent>
     </Card>
   )
-}
+})
+
+export default MetricCard
 

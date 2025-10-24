@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { useRouter } from 'next/navigation'
 import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
@@ -15,11 +15,7 @@ export default function SearchHistoryPage() {
   const [searchHistory, setSearchHistory] = useState<SearchHistory[]>([])
   const [loading, setLoading] = useState(true)
 
-  useEffect(() => {
-    fetchSearchHistory()
-  }, [])
-
-  const fetchSearchHistory = async () => {
+  const fetchSearchHistory = useCallback(async () => {
     try {
       setLoading(true)
       const response = await api.get('/search/history')
@@ -30,14 +26,18 @@ export default function SearchHistoryPage() {
     } finally {
       setLoading(false)
     }
-  }
+  }, [])
 
-  const handleRerun = (history: SearchHistory) => {
+  useEffect(() => {
+    fetchSearchHistory()
+  }, [fetchSearchHistory])
+
+  const handleRerun = useCallback((history: SearchHistory) => {
     // Navigate to search page
     router.push('/dashboard/search')
-  }
+  }, [router])
 
-  const handleClearHistory = async () => {
+  const handleClearHistory = useCallback(async () => {
     try {
       await api.delete('/search/history')
       setSearchHistory([])
@@ -46,15 +46,15 @@ export default function SearchHistoryPage() {
       console.error('Failed to clear search history:', error)
       toast.error('Failed to clear search history.')
     }
-  }
+  }, [])
 
-  const formatDate = (dateString: string) => {
+  const formatDate = useCallback((dateString: string) => {
     return new Date(dateString).toLocaleDateString()
-  }
+  }, [])
 
-  const formatTime = (dateString: string) => {
+  const formatTime = useCallback((dateString: string) => {
     return new Date(dateString).toLocaleTimeString()
-  }
+  }, [])
 
   if (loading) {
     return (
