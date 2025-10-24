@@ -83,16 +83,16 @@ describe('Competitors List Page', () => {
       </Provider>
     )
 
-    // Wait for competitors to load
+    // Wait for competitors to load (both mobile and desktop views render)
     await waitFor(() => {
-      expect(screen.getByText('Competitor A')).toBeInTheDocument()
+      expect(screen.getAllByText('Competitor A').length).toBeGreaterThan(0)
     })
 
-    expect(screen.getByText('Competitor B')).toBeInTheDocument()
-    expect(screen.getByText('competitora.com')).toBeInTheDocument()
-    expect(screen.getByText('competitorb.com')).toBeInTheDocument()
-    expect(screen.getByText('Technology')).toBeInTheDocument()
-    expect(screen.getByText('Finance')).toBeInTheDocument()
+    expect(screen.getAllByText('Competitor B').length).toBeGreaterThan(0)
+    expect(screen.getAllByText('competitora.com').length).toBeGreaterThan(0)
+    expect(screen.getAllByText('competitorb.com').length).toBeGreaterThan(0)
+    expect(screen.getAllByText('Technology').length).toBeGreaterThan(0)
+    expect(screen.getAllByText('Finance').length).toBeGreaterThan(0)
   })
 
   it('should show table headers: Name, Domain, Industry, Created, Actions', async () => {
@@ -152,14 +152,14 @@ describe('Competitors List Page', () => {
       </Provider>
     )
 
-    // Wait for competitor to load
+    // Wait for competitor to load (both mobile and desktop views render)
     await waitFor(() => {
-      expect(screen.getByText('Competitor A')).toBeInTheDocument()
+      expect(screen.getAllByText('Competitor A').length).toBeGreaterThan(0)
     })
 
-    // Click on the row to view details
-    const viewButton = screen.getByRole('button', { name: /view/i })
-    await user.click(viewButton)
+    // Click on the row to view details (get all view buttons, click the first one)
+    const viewButtons = screen.getAllByRole('button', { name: /view/i })
+    await user.click(viewButtons[0])
 
     expect(mockPush).toHaveBeenCalledWith('/dashboard/competitors/1')
   })
@@ -219,16 +219,25 @@ describe('Competitors List Page', () => {
       </Provider>
     )
 
-    // Wait for competitor to load
+    // Wait for competitor to load (both mobile and desktop views render)
     await waitFor(() => {
-      expect(screen.getByText('Competitor A')).toBeInTheDocument()
+      expect(screen.getAllByText('Competitor A').length).toBeGreaterThan(0)
     })
 
-    // Click delete button
-    const deleteButton = screen.getByRole('button', { name: 'Delete' })
-    await user.click(deleteButton)
+    // Click delete button (get all delete buttons, click the first one)
+    const deleteButtons = screen.getAllByRole('button', { name: 'Delete' })
+    await user.click(deleteButtons[0])
+
+    // Wait for the delete confirmation modal to appear (lazy-loaded with Suspense)
+    // AlertDialog uses role="alertdialog" not "dialog"
+    await waitFor(() => {
+      expect(screen.getByText('Delete Competitor')).toBeInTheDocument()
+    })
 
     // Confirm deletion
+    await waitFor(() => {
+      expect(screen.getByRole('button', { name: /confirm/i })).toBeInTheDocument()
+    })
     const confirmButton = screen.getByRole('button', { name: /confirm/i })
     await user.click(confirmButton)
 
@@ -296,19 +305,20 @@ describe('Competitors List Page', () => {
       </Provider>
     )
 
+    // Wait for all competitors to load (both mobile and desktop views render)
     await waitFor(() => {
-      expect(screen.getByText('TechCorp')).toBeInTheDocument()
+      expect(screen.getAllByText('TechCorp').length).toBeGreaterThan(0)
     })
 
-    expect(screen.getByText('FinanceHub')).toBeInTheDocument()
-    expect(screen.getByText('TechStart')).toBeInTheDocument()
+    expect(screen.getAllByText('FinanceHub').length).toBeGreaterThan(0)
+    expect(screen.getAllByText('TechStart').length).toBeGreaterThan(0)
 
     const searchInput = screen.getByPlaceholderText(/search competitors/i)
     await user.type(searchInput, 'Tech')
 
     await waitFor(() => {
-      expect(screen.getByText('TechCorp')).toBeInTheDocument()
-      expect(screen.getByText('TechStart')).toBeInTheDocument()
+      expect(screen.getAllByText('TechCorp').length).toBeGreaterThan(0)
+      expect(screen.getAllByText('TechStart').length).toBeGreaterThan(0)
       expect(screen.queryByText('FinanceHub')).not.toBeInTheDocument()
     })
 
@@ -316,7 +326,7 @@ describe('Competitors List Page', () => {
     await user.type(searchInput, 'Finance')
 
     await waitFor(() => {
-      expect(screen.getByText('FinanceHub')).toBeInTheDocument()
+      expect(screen.getAllByText('FinanceHub').length).toBeGreaterThan(0)
       expect(screen.queryByText('TechCorp')).not.toBeInTheDocument()
       expect(screen.queryByText('TechStart')).not.toBeInTheDocument()
     })
@@ -344,28 +354,29 @@ describe('Competitors List Page', () => {
       </Provider>
     )
 
+    // Wait for first page to load (both mobile and desktop views render)
     await waitFor(() => {
-      expect(screen.getByText('Competitor 1')).toBeInTheDocument()
+      expect(screen.getAllByText('Competitor 1').length).toBeGreaterThan(0)
     })
 
-    expect(screen.getByText('Competitor 10')).toBeInTheDocument()
+    expect(screen.getAllByText('Competitor 10').length).toBeGreaterThan(0)
     expect(screen.queryByText('Competitor 11')).not.toBeInTheDocument()
 
     const nextButton = screen.getByRole('button', { name: /next/i })
     await user.click(nextButton)
 
     await waitFor(() => {
-      expect(screen.getByText('Competitor 11')).toBeInTheDocument()
+      expect(screen.getAllByText('Competitor 11').length).toBeGreaterThan(0)
     })
 
-    expect(screen.getByText('Competitor 20')).toBeInTheDocument()
+    expect(screen.getAllByText('Competitor 20').length).toBeGreaterThan(0)
     expect(screen.queryByText('Competitor 1')).not.toBeInTheDocument()
 
     const prevButton = screen.getByRole('button', { name: /previous/i })
     await user.click(prevButton)
 
     await waitFor(() => {
-      expect(screen.getByText('Competitor 1')).toBeInTheDocument()
+      expect(screen.getAllByText('Competitor 1').length).toBeGreaterThan(0)
     })
   })
 
@@ -391,26 +402,27 @@ describe('Competitors List Page', () => {
       </Provider>
     )
 
+    // Wait for competitors to load (both mobile and desktop views render)
     await waitFor(() => {
-      expect(screen.getByText('TechCorp 1')).toBeInTheDocument()
+      expect(screen.getAllByText('TechCorp 1').length).toBeGreaterThan(0)
     })
 
     const searchInput = screen.getByPlaceholderText(/search competitors/i)
     await user.type(searchInput, 'Tech')
 
     await waitFor(() => {
-      expect(screen.getByText('TechCorp 1')).toBeInTheDocument()
+      expect(screen.getAllByText('TechCorp 1').length).toBeGreaterThan(0)
       expect(screen.queryByText('FinanceHub 2')).not.toBeInTheDocument()
     })
 
-    expect(screen.getByText('TechCorp 19')).toBeInTheDocument()
+    expect(screen.getAllByText('TechCorp 19').length).toBeGreaterThan(0)
     expect(screen.queryByText('TechCorp 21')).not.toBeInTheDocument()
 
     const nextButton = screen.getByRole('button', { name: /next/i })
     await user.click(nextButton)
 
     await waitFor(() => {
-      expect(screen.getByText('TechCorp 21')).toBeInTheDocument()
+      expect(screen.getAllByText('TechCorp 21').length).toBeGreaterThan(0)
     })
 
     expect(screen.queryByText('TechCorp 1')).not.toBeInTheDocument()
