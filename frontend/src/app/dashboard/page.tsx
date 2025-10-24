@@ -44,17 +44,17 @@ export default function DashboardPage() {
   }, [router])
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-4 sm:space-y-6">
       <div>
-        <h1 className="text-3xl font-bold text-text-primary">
+        <h1 className="text-2xl sm:text-3xl font-bold text-text-primary">
           Welcome back, {user?.full_name}
         </h1>
-        <p className="text-text-secondary mt-2">
+        <p className="text-text-secondary mt-1 sm:mt-2 text-sm sm:text-base">
           Here's what's happening with your competitive intelligence
         </p>
       </div>
 
-      <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4">
+      <div className="grid grid-cols-1 gap-4 sm:gap-6 sm:grid-cols-2 lg:grid-cols-4">
         <MetricCard
           icon={<UserGroupIcon className="h-6 w-6" />}
           title="Total Competitors"
@@ -81,7 +81,7 @@ export default function DashboardPage() {
         />
       </div>
 
-      <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
+      <div className="grid grid-cols-1 gap-4 sm:gap-6 lg:grid-cols-2">
         <Card>
           <CardHeader>
             <CardTitle>Quick Actions</CardTitle>

@@ -141,15 +141,15 @@ export default function CompetitorsPage() {
   }
 
   return (
-    <div className="space-y-6">
-      <div className="flex items-center justify-between">
+    <div className="space-y-4 sm:space-y-6">
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-bold text-text-primary">Competitors</h1>
-          <p className="text-sm text-text-secondary mt-1">
+          <h1 className="text-xl sm:text-2xl font-bold text-text-primary">Competitors</h1>
+          <p className="text-xs sm:text-sm text-text-secondary mt-1">
             Manage and monitor your competitors
           </p>
         </div>
-        <Button onClick={() => setIsAddModalOpen(true)}>
+        <Button onClick={() => setIsAddModalOpen(true)} className="w-full sm:w-auto">
           <PlusIcon className="h-5 w-5 mr-2" />
           Add Competitor
         </Button>
@@ -194,7 +194,36 @@ export default function CompetitorsPage() {
         </Card>
       ) : (
         <>
-          <div className="rounded-lg border">
+          {/* Mobile: Card View */}
+          <div className="md:hidden space-y-4">
+            {paginatedCompetitors.map((competitor) => (
+              <Card key={competitor.id} className="p-4">
+                <div className="space-y-3">
+                  <div>
+                    <h3 className="font-semibold text-text-primary">{competitor.name}</h3>
+                    <p className="text-sm text-text-secondary mt-1">{competitor.domain || 'No domain'}</p>
+                  </div>
+                  <div className="flex gap-4 text-sm text-text-secondary">
+                    <span>{competitor.industry || 'No industry'}</span>
+                    <span>{format(new Date(competitor.created_at), 'MMM d, yyyy')}</span>
+                  </div>
+                  <div className="flex gap-2 pt-2">
+                    <Button variant="outline" size="sm" onClick={() => handleView(competitor.id)} className="flex-1">
+                      <EyeIcon className="h-4 w-4 mr-1" />
+                      View
+                    </Button>
+                    <Button variant="outline" size="sm" onClick={() => setDeleteConfirmId(competitor.id)} className="flex-1">
+                      <TrashIcon className="h-4 w-4 mr-1" />
+                      Delete
+                    </Button>
+                  </div>
+                </div>
+              </Card>
+            ))}
+          </div>
+
+          {/* Desktop: Table View */}
+          <div className="hidden md:block rounded-lg border">
             <Table>
               <TableHeader>
                 <TableRow>
@@ -229,8 +258,8 @@ export default function CompetitorsPage() {
           </div>
 
           {totalPages > 1 && (
-            <div className="flex items-center justify-between">
-              <p className="text-sm text-text-secondary">
+            <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
+              <p className="text-xs sm:text-sm text-text-secondary">
                 Showing {(currentPage - 1) * ITEMS_PER_PAGE + 1} to{' '}
                 {Math.min(currentPage * ITEMS_PER_PAGE, filteredCompetitors.length)} of{' '}
                 {filteredCompetitors.length} results
@@ -238,6 +267,7 @@ export default function CompetitorsPage() {
               <div className="flex gap-2">
                 <Button
                   variant="outline"
+                  size="sm"
                   onClick={() => setCurrentPage((prev) => Math.max(1, prev - 1))}
                   disabled={currentPage === 1}
                 >
@@ -245,6 +275,7 @@ export default function CompetitorsPage() {
                 </Button>
                 <Button
                   variant="outline"
+                  size="sm"
                   onClick={() => setCurrentPage((prev) => Math.min(totalPages, prev + 1))}
                   disabled={currentPage === totalPages}
                 >

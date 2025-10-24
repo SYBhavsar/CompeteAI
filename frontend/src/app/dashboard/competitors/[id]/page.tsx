@@ -161,11 +161,11 @@ export default function CompetitorDetailPage() {
   const lastScraped = getLastScrapedDate
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-4 sm:space-y-6">
       {/* Header */}
-      <div className="flex items-start justify-between">
-        <div>
-          <h1 className="text-2xl font-bold text-text-primary">{competitor.name}</h1>
+      <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4">
+        <div className="flex-1">
+          <h1 className="text-xl sm:text-2xl font-bold text-text-primary">{competitor.name}</h1>
           {competitor.domain && (
             <a
               href={competitor.domain}

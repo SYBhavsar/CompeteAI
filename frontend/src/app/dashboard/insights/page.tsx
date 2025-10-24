@@ -153,20 +153,20 @@ export default function InsightsPage() {
   }, [])
 
   return (
-    <div className="space-y-6">
-      <div className="flex items-center justify-between">
+    <div className="space-y-4 sm:space-y-6">
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
-          <h1 className="text-3xl font-bold">Insights</h1>
-          <p className="text-muted-foreground">AI-generated competitive insights</p>
+          <h1 className="text-xl sm:text-3xl font-bold">Insights</h1>
+          <p className="text-sm text-muted-foreground">AI-generated competitive insights</p>
         </div>
-        <Button onClick={handleExport} variant="outline">
+        <Button onClick={handleExport} variant="outline" className="w-full sm:w-auto">
           <ArrowDownTrayIcon className="h-4 w-4 mr-2" />
           Export
         </Button>
       </div>
 
       {/* Filters */}
-      <Card className="p-6">
+      <Card className="p-4 sm:p-6">
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           {/* Competitor Filter */}
           <div>

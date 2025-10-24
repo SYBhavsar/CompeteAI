@@ -36,7 +36,7 @@ export default function DashboardLayout({
 
           {/* Page content */}
           <main id="main-content" className="flex-1 overflow-y-auto">
-            <div className="py-6 px-6">
+            <div className="py-4 px-4 sm:py-6 sm:px-6 lg:px-8">
               {/* Breadcrumb navigation */}
               <Breadcrumbs />
 

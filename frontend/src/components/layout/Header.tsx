@@ -32,9 +32,9 @@ export default function Header() {
 
   return (
     <div className="flex h-16 flex-shrink-0 border-b border-border bg-surface">
-      <div className="flex flex-1 justify-between px-6">
-        {/* Left side - Search Bar */}
-        <div className="flex flex-1 items-center">
+      <div className="flex flex-1 justify-between px-4 sm:px-6">
+        {/* Left side - Search Bar (hidden on mobile) */}
+        <div className="hidden md:flex flex-1 items-center">
           <div className="relative w-full max-w-xs">
             <div className="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
               <MagnifyingGlassIcon className="h-5 w-5 text-text-secondary" aria-hidden="true" />
@@ -50,8 +50,11 @@ export default function Header() {
           </div>
         </div>
 
+        {/* Mobile: Add spacing to account for hamburger menu */}
+        <div className="md:hidden flex-1" />
+
         {/* Right side - notifications and user menu */}
-        <div className="flex items-center gap-4">
+        <div className="flex items-center gap-2 sm:gap-4">
           {/* Notifications */}
           <NotificationDropdown />
 

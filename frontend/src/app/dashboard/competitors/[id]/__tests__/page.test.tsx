@@ -295,7 +295,7 @@ describe('Competitor Detail Page', () => {
     await user.click(deleteButton)
 
     // Confirm deletion
-    const confirmButton = screen.getByRole('button', { name: /confirm/i })
+    const confirmButton = await screen.findByRole('button', { name: /confirm/i })
     await user.click(confirmButton)
 
     // Should redirect to competitors list

@@ -71,11 +71,11 @@ export default function SearchHistoryPage() {
   }
 
   return (
-    <div className="space-y-6">
-      <div className="flex items-center justify-between">
+    <div className="space-y-4 sm:space-y-6">
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
-          <h1 className="text-3xl font-bold">Search History</h1>
-          <p className="text-muted-foreground">Your recent searches</p>
+          <h1 className="text-xl sm:text-3xl font-bold">Search History</h1>
+          <p className="text-sm text-muted-foreground">Your recent searches</p>
         </div>
         {searchHistory.length > 0 && (
           <Button variant="outline" onClick={handleClearHistory}>

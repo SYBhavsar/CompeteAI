@@ -114,14 +114,14 @@ export default function SearchPage() {
   }, [currentPage])
 
   return (
-    <div className="space-y-6">
-      <div className="flex items-center justify-between">
+    <div className="space-y-4 sm:space-y-6">
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
-          <h1 className="text-3xl font-bold">Search Insights</h1>
-          <p className="text-muted-foreground">Search through competitive intelligence data</p>
+          <h1 className="text-xl sm:text-3xl font-bold">Search Insights</h1>
+          <p className="text-sm text-muted-foreground">Search through competitive intelligence data</p>
         </div>
         <div className="flex gap-2">
-          <Button onClick={handleSaveSearch} variant="outline">
+          <Button onClick={handleSaveSearch} variant="outline" className="w-full sm:w-auto">
             <BookmarkIcon className="h-5 w-5 mr-2" />
             Save Search
           </Button>
@@ -146,7 +146,7 @@ export default function SearchPage() {
         </Button>
       </div>
 
-      <Card className="p-6">
+      <Card className="p-4 sm:p-6">
         <div className="space-y-4">
           {/* Search Type Toggle */}
           <div className="flex gap-2">
