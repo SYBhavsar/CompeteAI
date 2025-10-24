@@ -6,6 +6,7 @@ import { fetchCompetitorsAsync } from '@/features/competitors/competitorsSlice'
 import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
+import TableSkeleton from '@/components/ui/TableSkeleton'
 import api from '@/services/api'
 import toast from 'react-hot-toast'
 
@@ -111,9 +112,10 @@ export default function ComparePage() {
 
       {/* Comparison Results */}
       {loading ? (
-        <div className="text-center py-8">
-          <p>Loading comparison...</p>
-        </div>
+        <Card className="p-6">
+          <h2 className="text-xl font-semibold mb-4">Key Metrics</h2>
+          <TableSkeleton rows={selectedIds.length} columns={6} />
+        </Card>
       ) : comparisonData ? (
         <div className="space-y-6">
           {/* Metrics Table */}

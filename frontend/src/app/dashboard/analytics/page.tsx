@@ -17,6 +17,7 @@ import api from '@/services/api'
 import TrendChart from '@/components/charts/TrendChart'
 import SentimentChart from '@/components/charts/SentimentChart'
 import QualityScoreChart from '@/components/charts/QualityScoreChart'
+import ChartSkeleton from '@/components/ui/ChartSkeleton'
 import toast from 'react-hot-toast'
 
 type TimeRange = '7' | '30' | '90'
@@ -146,9 +147,11 @@ export default function AnalyticsPage() {
       </Card>
 
       {loading ? (
-        <div className="text-center py-8">
-          <p>Loading analytics...</p>
-        </div>
+        <>
+          <ChartSkeleton />
+          <ChartSkeleton />
+          <ChartSkeleton />
+        </>
       ) : (
         <>
           {/* Trend Chart */}

@@ -8,7 +8,7 @@ import { selectUser } from '@/features/auth/authSlice'
 import MetricCard from '@/components/dashboard/MetricCard'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-import { PlusIcon } from '@heroicons/react/24/outline'
+import { PlusIcon,UserGroupIcon,LightBulbIcon,BellAlertIcon,MagnifyingGlassIcon } from '@heroicons/react/24/outline'
 import toast from 'react-hot-toast'
 
 export default function DashboardPage() {

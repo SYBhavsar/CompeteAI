@@ -10,6 +10,7 @@ import { Badge } from '@/components/ui/badge'
 import { TrashIcon, PencilIcon } from '@heroicons/react/24/outline'
 import CreateAlertModal from '@/components/alerts/CreateAlertModal'
 import EditAlertModal from '@/components/alerts/EditAlertModal'
+import CardListSkeleton from '@/components/ui/CardListSkeleton'
 import { Alert } from '@/types'
 import toast from 'react-hot-toast'
 
@@ -75,9 +76,7 @@ export default function AlertsPage() {
       </div>
 
       {loading ? (
-        <div className="text-center py-8">
-          <p>Loading alerts...</p>
-        </div>
+        <CardListSkeleton count={3} />
       ) : alerts.length === 0 ? (
         <Card className="p-8 text-center">
           <p className="text-muted-foreground">No alerts configured</p>

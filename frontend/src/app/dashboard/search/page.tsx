@@ -10,6 +10,7 @@ import { Card } from '@/components/ui/card'
 import { MagnifyingGlassIcon, BookmarkIcon, ArrowDownTrayIcon, ChevronLeftIcon, ChevronRightIcon } from '@heroicons/react/24/outline'
 import SearchFilters from '@/components/search/SearchFilters'
 import SearchResultCard from '@/components/search/SearchResultCard'
+import CardListSkeleton from '@/components/ui/CardListSkeleton'
 import { SearchResult, SearchFilters as SearchFiltersType } from '@/types'
 import api from '@/services/api'
 import toast from 'react-hot-toast'
@@ -180,9 +181,7 @@ export default function SearchPage() {
 
       {/* Results */}
       {loading && (
-        <div className="text-center py-8">
-          <p>Loading results...</p>
-        </div>
+        <CardListSkeleton count={5} />
       )}
 
       {!loading && searched && results.length === 0 && (

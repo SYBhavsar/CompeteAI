@@ -17,6 +17,7 @@ import { ArrowDownTrayIcon, ChevronLeftIcon, ChevronRightIcon } from '@heroicons
 import { ProcessedInsight } from '@/types'
 import api from '@/services/api'
 import InsightDetailModal from '@/components/insights/InsightDetailModal'
+import CardListSkeleton from '@/components/ui/CardListSkeleton'
 import toast from 'react-hot-toast'
 
 type SortOption = 'date' | 'quality_score'
@@ -210,9 +211,7 @@ export default function InsightsPage() {
 
       {/* Insights List */}
       {loading ? (
-        <div className="text-center py-8">
-          <p>Loading insights...</p>
-        </div>
+        <CardListSkeleton count={5} />
       ) : paginatedInsights.length === 0 ? (
         <Card className="p-8 text-center">
           <p className="text-muted-foreground">No insights found</p>

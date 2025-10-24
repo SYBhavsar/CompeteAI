@@ -6,6 +6,7 @@ import { fetchNotificationsAsync, markAsReadAsync } from '@/features/alerts/aler
 import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
+import CardListSkeleton from '@/components/ui/CardListSkeleton'
 import { formatDistanceToNow } from 'date-fns'
 import toast from 'react-hot-toast'
 
@@ -13,7 +14,7 @@ type FilterType = 'all' | 'unread' | 'read'
 
 export default function NotificationsPage() {
   const dispatch = useAppDispatch()
-  const { notifications, unreadCount } = useAppSelector((state) => state.alerts)
+  const { notifications, unreadCount, loading } = useAppSelector((state) => state.alerts)
 
   const [filter, setFilter] = useState<FilterType>('all')
 
@@ -77,7 +78,9 @@ export default function NotificationsPage() {
       </div>
 
       {/* Notifications List */}
-      {filteredNotifications.length === 0 ? (
+      {loading ? (
+        <CardListSkeleton count={4} />
+      ) : filteredNotifications.length === 0 ? (
         <Card className="p-8 text-center">
           <p className="text-muted-foreground">No notifications</p>
         </Card>

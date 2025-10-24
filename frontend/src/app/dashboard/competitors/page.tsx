@@ -31,6 +31,7 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table'
+import TableSkeleton from '@/components/ui/TableSkeleton'
 import toast from 'react-hot-toast'
 
 const ITEMS_PER_PAGE = 10
@@ -109,8 +110,16 @@ export default function CompetitorsPage() {
    */
   if (loading && competitors.length === 0) {
     return (
-      <div className="flex items-center justify-center h-64">
-        <p className="text-text-secondary">Loading competitors...</p>
+      <div className="space-y-6">
+        <div className="flex items-center justify-between">
+          <div>
+            <h1 className="text-2xl font-bold text-text-primary">Competitors</h1>
+            <p className="text-sm text-text-secondary mt-1">
+              Manage and monitor your competitors
+            </p>
+          </div>
+        </div>
+        <TableSkeleton rows={5} columns={5} />
       </div>
     )
   }
