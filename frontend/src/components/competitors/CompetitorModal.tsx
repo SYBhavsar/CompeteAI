@@ -131,7 +131,7 @@ export default function CompetitorModal({
               <Label htmlFor="name" className="text-right">
                 Name <span className="text-error">*</span>
               </Label>
-              <Input id="name" {...register('name')} className="col-span-3" placeholder="Enter competitor name" />
+              <Input id="name" {...register('name')} className="col-span-3" placeholder="Enter competitor name" autoFocus />
               {errors.name && <p className="col-span-4 text-sm text-error">{errors.name.message}</p>}
             </div>
             <div className="grid grid-cols-4 items-center gap-4">

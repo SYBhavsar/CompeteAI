@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import { useAppSelector, useAppDispatch } from '@/lib/hooks'
+import { usePageTitle } from '@/hooks/usePageTitle'
 import { fetchCompetitorsAsync } from '@/features/competitors/competitorsSlice'
 import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
@@ -24,6 +25,8 @@ type SortOption = 'date' | 'quality_score'
 type SentimentFilter = 'all' | 'positive' | 'negative' | 'neutral'
 
 export default function InsightsPage() {
+  usePageTitle('Insights')
+
   const dispatch = useAppDispatch()
   const { competitors } = useAppSelector((state) => state.competitors)
 

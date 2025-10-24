@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation'
 import { useAppDispatch, useAppSelector } from '@/lib/hooks'
 import { fetchCompetitorsAsync, selectCompetitors } from '@/features/competitors/competitorsSlice'
 import { selectUser } from '@/features/auth/authSlice'
+import { usePageTitle } from '@/hooks/usePageTitle'
 import MetricCard from '@/components/dashboard/MetricCard'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
@@ -12,6 +13,8 @@ import { PlusIcon,UserGroupIcon,LightBulbIcon,BellAlertIcon,MagnifyingGlassIcon 
 import toast from 'react-hot-toast'
 
 export default function DashboardPage() {
+  usePageTitle('Dashboard')
+
   const router = useRouter()
   const dispatch = useAppDispatch()
   const user = useAppSelector(selectUser)

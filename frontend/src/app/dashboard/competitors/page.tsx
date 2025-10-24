@@ -3,6 +3,7 @@
 import { useEffect, useState, useMemo } from 'react'
 import { useRouter } from 'next/navigation'
 import { useAppDispatch, useAppSelector } from '@/lib/hooks'
+import { usePageTitle } from '@/hooks/usePageTitle'
 import {
   fetchCompetitorsAsync,
   deleteCompetitorAsync,
@@ -41,6 +42,8 @@ const ITEMS_PER_PAGE = 10
  * Displays all competitors in a table with actions
  */
 export default function CompetitorsPage() {
+  usePageTitle('Competitors')
+
   const router = useRouter()
   const dispatch = useAppDispatch()
 
@@ -158,6 +161,7 @@ export default function CompetitorsPage() {
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             className="max-w-sm"
+            aria-label="Search competitors"
           />
         </div>
       )}

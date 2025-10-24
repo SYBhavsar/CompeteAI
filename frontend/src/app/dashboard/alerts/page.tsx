@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import { useAppSelector, useAppDispatch } from '@/lib/hooks'
+import { usePageTitle } from '@/hooks/usePageTitle'
 import { fetchAlertsAsync, updateAlertAsync, deleteAlertAsync } from '@/features/alerts/alertsSlice'
 import { fetchCompetitorsAsync } from '@/features/competitors/competitorsSlice'
 import { Button } from '@/components/ui/button'
@@ -15,6 +16,8 @@ import { Alert } from '@/types'
 import toast from 'react-hot-toast'
 
 export default function AlertsPage() {
+  usePageTitle('Alerts')
+
   const dispatch = useAppDispatch()
   const { alerts, loading } = useAppSelector((state) => state.alerts)
   const { competitors } = useAppSelector((state) => state.competitors)

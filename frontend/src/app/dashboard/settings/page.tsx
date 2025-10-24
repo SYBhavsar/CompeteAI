@@ -3,6 +3,7 @@
 import { useState } from 'react'
 import { useTheme } from 'next-themes'
 import { useAppSelector, useAppDispatch } from '@/lib/hooks'
+import { usePageTitle } from '@/hooks/usePageTitle'
 import { updateUserAsync, updatePasswordAsync } from '@/features/auth/authSlice'
 import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
@@ -19,6 +20,8 @@ import {
 import toast from 'react-hot-toast'
 
 export default function SettingsPage() {
+  usePageTitle('Settings')
+
   const dispatch = useAppDispatch()
   const { user } = useAppSelector((state) => state.auth)
   const { theme, setTheme } = useTheme()

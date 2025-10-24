@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import { useAppSelector, useAppDispatch } from '@/lib/hooks'
+import { usePageTitle } from '@/hooks/usePageTitle'
 import { fetchCompetitorsAsync } from '@/features/competitors/competitorsSlice'
 import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
@@ -23,6 +24,8 @@ import toast from 'react-hot-toast'
 type TimeRange = '7' | '30' | '90'
 
 export default function AnalyticsPage() {
+  usePageTitle('Analytics')
+
   const dispatch = useAppDispatch()
   const { competitors } = useAppSelector((state) => state.competitors)
 

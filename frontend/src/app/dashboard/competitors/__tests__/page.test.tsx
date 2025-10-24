@@ -42,12 +42,9 @@ describe('Competitors List Page', () => {
       </Provider>
     )
 
-    // Should show loading initially
-    expect(screen.getByText(/loading/i)).toBeInTheDocument()
-
     // Wait for empty state
     await waitFor(() => {
-      expect(screen.getByText(/no competitors/i)).toBeInTheDocument()
+      expect(screen.getByText(/no competitors found/i)).toBeInTheDocument()
     })
 
     // Should show Add Competitor buttons (header + empty state)

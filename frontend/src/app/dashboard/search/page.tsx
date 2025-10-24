@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { useAppSelector, useAppDispatch } from '@/lib/hooks'
+import { usePageTitle } from '@/hooks/usePageTitle'
 import { fetchCompetitorsAsync } from '@/features/competitors/competitorsSlice'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -18,6 +19,8 @@ import toast from 'react-hot-toast'
 type SearchType = 'semantic' | 'traditional'
 
 export default function SearchPage() {
+  usePageTitle('Search')
+
   const router = useRouter()
   const dispatch = useAppDispatch()
   const { competitors } = useAppSelector((state) => state.competitors)
@@ -167,6 +170,7 @@ export default function SearchPage() {
               value={query}
               onChange={(e) => setQuery(e.target.value)}
               onKeyDown={(e) => e.key === 'Enter' && handleSearch()}
+              aria-label="Search insights"
             />
             <Button onClick={handleSearch} disabled={loading}>
               <MagnifyingGlassIcon className="h-5 w-5 mr-2" />

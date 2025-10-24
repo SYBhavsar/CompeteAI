@@ -45,6 +45,7 @@ export default function Header() {
               className="pl-10 pr-3"
               placeholder="Search..."
               type="search"
+              aria-label="Search"
             />
           </div>
         </div>

@@ -25,7 +25,16 @@ export default function RootLayout({
         >
           <StoreProvider>
             {children}
-            <Toaster position="top-right" />
+            <Toaster
+              position="top-right"
+              toastOptions={{
+                // Accessibility: Ensure screen readers announce toasts
+                ariaProps: {
+                  role: 'status',
+                  'aria-live': 'polite',
+                },
+              }}
+            />
           </StoreProvider>
         </ThemeProvider>
       </body>
