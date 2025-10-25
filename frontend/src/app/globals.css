@@ -46,37 +46,37 @@
   :root {
     --background: #F1F5F9;
     --foreground: #0F172A;
-    --surface: #F8FAFC;
-    --border: #CBD5E1;
+    --surface: #FFFFFF;
+    --border: #94A3B8;
     --text-primary: #0F172A;
-    --text-secondary: #475569;
+    --text-secondary: #334155;
     --primary: #4F46E5;
-    --secondary: #D946EF;
-    --accent: #0891B2;
-    --success: #059669;
-    --warning: #D97706;
-    --error: #DC2626;
-    --chart-grid: #E2E8F0;
+    --secondary: #C026D3;
+    --accent: #0E7490;
+    --success: #047857;
+    --warning: #B45309;
+    --error: #B91C1C;
+    --chart-grid: #CBD5E1;
 
     /* shadcn variables for light mode */
     --card: #FFFFFF;
     --card-foreground: #0F172A;
     --popover: #FFFFFF;
     --popover-foreground: #0F172A;
-    --primary-foreground: #F8FAFC;
-    --secondary-foreground: #F8FAFC;
+    --primary-foreground: #FFFFFF;
+    --secondary-foreground: #FFFFFF;
     --muted: #F1F5F9;
-    --muted-foreground: #64748B;
-    --accent-foreground: #F8FAFC;
-    --destructive: #DC2626;
-    --destructive-foreground: #F8FAFC;
-    --input: #E2E8F0;
+    --muted-foreground: #475569;
+    --accent-foreground: #FFFFFF;
+    --destructive: #B91C1C;
+    --destructive-foreground: #FFFFFF;
+    --input: #CBD5E1;
     --ring: #4F46E5;
-    --chart-1: #059669;
-    --chart-2: #D97706;
-    --chart-3: #DC2626;
+    --chart-1: #047857;
+    --chart-2: #B45309;
+    --chart-3: #B91C1C;
     --chart-4: #4F46E5;
-    --chart-5: #D946EF;
+    --chart-5: #C026D3;
   }
 }
 
@@ -172,36 +172,36 @@ body {
 .light {
   --background: #F1F5F9;
   --foreground: #0F172A;
-  --surface: #F8FAFC;
-  --border: #CBD5E1;
+  --surface: #FFFFFF;
+  --border: #94A3B8;
   --text-primary: #0F172A;
-  --text-secondary: #475569;
+  --text-secondary: #334155;
   --primary: #4F46E5;
-  --secondary: #D946EF;
-  --accent: #0891B2;
-  --success: #059669;
-  --warning: #D97706;
-  --error: #DC2626;
-  --chart-grid: #E2E8F0;
+  --secondary: #C026D3;
+  --accent: #0E7490;
+  --success: #047857;
+  --warning: #B45309;
+  --error: #B91C1C;
+  --chart-grid: #CBD5E1;
 
   --card: #FFFFFF;
   --card-foreground: #0F172A;
   --popover: #FFFFFF;
   --popover-foreground: #0F172A;
-  --primary-foreground: #F8FAFC;
-  --secondary-foreground: #F8FAFC;
+  --primary-foreground: #FFFFFF;
+  --secondary-foreground: #FFFFFF;
   --muted: #F1F5F9;
-  --muted-foreground: #64748B;
-  --accent-foreground: #F8FAFC;
-  --destructive: #DC2626;
-  --destructive-foreground: #F8FAFC;
-  --input: #E2E8F0;
+  --muted-foreground: #475569;
+  --accent-foreground: #FFFFFF;
+  --destructive: #B91C1C;
+  --destructive-foreground: #FFFFFF;
+  --input: #CBD5E1;
   --ring: #4F46E5;
-  --chart-1: #059669;
-  --chart-2: #D97706;
-  --chart-3: #DC2626;
+  --chart-1: #047857;
+  --chart-2: #B45309;
+  --chart-3: #B91C1C;
   --chart-4: #4F46E5;
-  --chart-5: #D946EF;
+  --chart-5: #C026D3;
 }
 
 /* Accessibility: Enhanced focus indicators */
