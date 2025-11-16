@@ -115,11 +115,11 @@ def check_all_active_alerts(self):
     """
     db = self.db
     from app.models.processed_insights import ProcessedInsights
-    from datetime import datetime, timedelta
+    from datetime import datetime, timedelta, timezone
 
     try:
         # Get insights created in the last 10 minutes that haven't been checked
-        recent_time = datetime.utcnow() - timedelta(minutes=10)
+        recent_time = datetime.now(timezone.utc) - timedelta(minutes=10)
         recent_insights = db.query(ProcessedInsights).filter(
             ProcessedInsights.created_at >= recent_time
         ).all()

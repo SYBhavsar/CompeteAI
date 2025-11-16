@@ -1,4 +1,4 @@
-from datetime import datetime
+from datetime import datetime, timezone
 from typing import Dict, Any
 
 from app.core.celery_app import celery_app
@@ -63,13 +63,13 @@ def scrape_data_source(data_source_id: int) -> Dict[str, Any]:
             content_type=scraped_data["content_type"],
             url=scraped_data["url"],
             content_hash=scraped_data["content_hash"],
-            scraped_at=datetime.utcnow()
+            scraped_at=datetime.now(timezone.utc)
         )
         
         db.add(raw_content)
         
         # Update last_scraped timestamp
-        data_source.last_scraped = datetime.utcnow()
+        data_source.last_scraped = datetime.now(timezone.utc)
         
         db.commit()
         

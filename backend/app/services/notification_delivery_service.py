@@ -66,12 +66,12 @@ class NotificationDeliveryService:
         if self._websocket_manager is None:
             return
 
-        from datetime import datetime
+        from datetime import datetime, timezone
         update_data = {
             "type": "notification_update",
             "id": notification.id,
             "is_read": notification.is_read,
-            "updated_at": datetime.utcnow().isoformat()
+            "updated_at": datetime.now(timezone.utc).isoformat()
         }
         await self._websocket_manager.send_update(notification.user_id, update_data)
 

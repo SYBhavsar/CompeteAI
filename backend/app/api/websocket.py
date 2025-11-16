@@ -7,7 +7,7 @@ from sqlalchemy.orm import Session
 from typing import Dict, Set
 import asyncio
 import json
-from datetime import datetime
+from datetime import datetime, timezone
 
 from app.core.database import SessionLocal
 from app.models import User
@@ -155,7 +155,7 @@ async def websocket_endpoint(
             while True:
                 try:
                     await asyncio.sleep(30)  # Heartbeat every 30 seconds
-                    await websocket.send_json({"type": "ping", "timestamp": datetime.utcnow().isoformat()})
+                    await websocket.send_json({"type": "ping", "timestamp": datetime.now(timezone.utc).isoformat()})
                 except Exception:
                     break
 
