@@ -29,6 +29,52 @@ def send_email(to_email: str, subject: str, body: str) -> bool:
 class NotificationDeliveryService:
     """Service for delivering notifications to users"""
 
+    def __init__(self):
+        self._websocket_manager = None
+
+    def set_websocket_manager(self, manager):
+        """Set the WebSocket connection manager for real-time notifications"""
+        self._websocket_manager = manager
+
+    async def send_websocket_notification(self, notification: Notification):
+        """
+        Send notification via WebSocket to connected clients
+
+        Args:
+            notification: Notification object to send
+        """
+        if self._websocket_manager is None:
+            return
+
+        notification_data = {
+            "type": "notification",
+            "id": notification.id,
+            "message": notification.message,
+            "is_read": notification.is_read,
+            "created_at": notification.created_at.isoformat() if notification.created_at else None,
+            "alert_id": notification.alert_id
+        }
+        await self._websocket_manager.send_notification(notification.user_id, notification_data)
+
+    async def send_websocket_update(self, notification: Notification):
+        """
+        Send notification update via WebSocket to connected clients
+
+        Args:
+            notification: Updated notification object
+        """
+        if self._websocket_manager is None:
+            return
+
+        from datetime import datetime
+        update_data = {
+            "type": "notification_update",
+            "id": notification.id,
+            "is_read": notification.is_read,
+            "updated_at": datetime.utcnow().isoformat()
+        }
+        await self._websocket_manager.send_update(notification.user_id, update_data)
+
     def get_unread_notifications(
         self,
         user_id: int,

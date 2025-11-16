@@ -22,6 +22,7 @@ dataclasses-json==0.6.7
 distro==1.9.0
 dnspython==2.8.0
 email-validator==2.3.0
+Faker==37.12.0
 fastapi==0.118.3
 frozenlist==1.8.0
 googleapis-common-protos==1.70.0
@@ -95,5 +96,6 @@ urllib3==2.5.0
 uvicorn==0.37.0
 vine==5.1.0
 wcwidth==0.2.14
+websockets==15.0.1
 yarl==1.22.0
 zstandard==0.25.0

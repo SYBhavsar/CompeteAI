@@ -7,6 +7,7 @@ from app.models import User
 from app.models.alert import Alert, Notification
 from app.schemas.alert import AlertCreate, AlertUpdate, AlertResponse, NotificationResponse
 from app.utils.dependencies import get_current_user
+from app.api.websocket import notify_notification_update
 
 router = APIRouter()
 
@@ -130,7 +131,7 @@ def get_notifications(
 
 
 @router.put("/notifications/{notification_id}/read")
-def mark_notification_read(
+async def mark_notification_read(
     notification_id: int,
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user)
@@ -146,5 +147,9 @@ def mark_notification_read(
 
     notification.is_read = True
     db.commit()
+    db.refresh(notification)
+
+    # Send WebSocket update
+    await notify_notification_update(notification)
 
     return {"message": "Notification marked as read"}

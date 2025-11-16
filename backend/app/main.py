@@ -10,6 +10,7 @@ from app.api.insights import router as insights_router
 from app.api.search import router as search_router
 from app.api.analytics import router as analytics_router
 from app.api.alerts import router as alerts_router
+from app.api.websocket import router as websocket_router
 
 app = FastAPI(
     title="AI Competitive Intelligence Platform",
@@ -35,6 +36,7 @@ app.include_router(insights_router, tags=["insights"])
 app.include_router(search_router, tags=["search"])
 app.include_router(analytics_router, tags=["analytics"])
 app.include_router(alerts_router, tags=["alerts"])
+app.include_router(websocket_router, tags=["websocket"])
 
 @app.get("/")
 async def root():
