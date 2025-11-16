@@ -78,7 +78,7 @@ def test_analytics_data(test_user_and_token):
         db.add_all([source1, source2])
         db.commit()
 
-        # Create raw content and insights
+        # Create raw content and insights for competitor 1
         for i in range(5):
             raw_content = RawContent(
                 data_source_id=source1.id,
@@ -95,6 +95,27 @@ def test_analytics_data(test_user_and_token):
                 sentiment="positive" if i % 2 == 0 else "negative",
                 insights=f"Insights {i}",
                 quality_score=0.8 + (i * 0.02)
+            )
+            db.add(insight)
+            db.commit()
+
+        # Create raw content and insights for competitor 2
+        for i in range(3):
+            raw_content = RawContent(
+                data_source_id=source2.id,
+                content=f"Test content {i}",
+                content_type="text/html",
+                url=f"https://companyb.com/post{i}"
+            )
+            db.add(raw_content)
+            db.commit()
+
+            insight = ProcessedInsights(
+                raw_content_id=raw_content.id,
+                summary=f"Summary {i}",
+                sentiment="neutral",
+                insights=f"Insights {i}",
+                quality_score=0.7 + (i * 0.05)
             )
             db.add(insight)
             db.commit()

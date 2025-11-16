@@ -169,9 +169,7 @@ def test_delete_competitor_success(client, test_competitor):
 
     response = client.delete(f"/competitors/{competitor_id}", headers=headers)
 
-    assert response.status_code == 200
-    data = response.json()
-    assert "message" in data
+    assert response.status_code == 204
 
     # Verify deletion
     get_response = client.get(f"/competitors/{competitor_id}", headers=headers)

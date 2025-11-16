@@ -1,6 +1,10 @@
-from fastapi import APIRouter, Depends, HTTPException, Query
+from fastapi import APIRouter, Depends, HTTPException, Query, status
 from sqlalchemy.orm import Session
 from typing import List, Optional
+import logging
+
+logger = logging.getLogger(__name__)
+
 
 from app.core.database import SessionLocal
 from app.models import User, Competitor, DataSource, RawContent, ProcessedInsights
@@ -31,32 +35,35 @@ def get_competitor_insights(
     current_user: User = Depends(get_current_user)
 ):
     """Get all insights for a competitor"""
-    # Verify competitor belongs to user
+    logger.info(f"Fetching insights for competitor {competitor_id}, user {current_user.id}. Filters: sentiment={sentiment}, limit={limit}, offset={offset}")
+    
     competitor = db.query(Competitor).filter(
         Competitor.id == competitor_id,
         Competitor.user_id == current_user.id
     ).first()
     
     if not competitor:
-        raise HTTPException(status_code=404, detail="Competitor not found")
+        logger.warning(f"Competitor {competitor_id} not found for user {current_user.id}.")
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Competitor not found")
     
-    # Build query for insights
-    query = db.query(ProcessedInsights).join(
-        RawContent, ProcessedInsights.raw_content_id == RawContent.id
-    ).join(
-        DataSource, RawContent.data_source_id == DataSource.id
-    ).filter(
-        DataSource.competitor_id == competitor_id
-    )
-    
-    # Apply sentiment filter if provided
-    if sentiment:
-        query = query.filter(ProcessedInsights.sentiment == sentiment)
-    
-    # Apply pagination
-    insights = query.offset(offset).limit(limit).all()
-    
-    return insights
+    try:
+        query = db.query(ProcessedInsights).join(
+            RawContent, ProcessedInsights.raw_content_id == RawContent.id
+        ).join(
+            DataSource, RawContent.data_source_id == DataSource.id
+        ).filter(
+            DataSource.competitor_id == competitor_id
+        )
+        
+        if sentiment:
+            query = query.filter(ProcessedInsights.sentiment == sentiment)
+        
+        insights = query.order_by(ProcessedInsights.created_at.desc()).offset(offset).limit(limit).all()
+        logger.info(f"Found {len(insights)} insights for competitor {competitor_id}.")
+        return insights
+    except Exception as e:
+        logger.error(f"Error fetching insights for competitor {competitor_id}: {e}", exc_info=True)
+        raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail="Internal server error")
 
 
 @router.get("/insights/{insight_id}", response_model=ProcessedInsightsResponse)
@@ -66,6 +73,8 @@ def get_insight(
     current_user: User = Depends(get_current_user)
 ):
     """Get specific insight by ID"""
+    logger.debug(f"Fetching insight {insight_id} for user {current_user.id}.")
+    
     insight = db.query(ProcessedInsights).join(
         RawContent, ProcessedInsights.raw_content_id == RawContent.id
     ).join(
@@ -78,19 +87,22 @@ def get_insight(
     ).first()
     
     if not insight:
-        raise HTTPException(status_code=404, detail="Insight not found")
+        logger.warning(f"Insight {insight_id} not found for user {current_user.id}.")
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Insight not found")
     
+    logger.info(f"Successfully fetched insight {insight_id} for user {current_user.id}.")
     return insight
 
 
 @router.post("/insights/process/{raw_content_id}", response_model=ProcessedInsightsResponse, status_code=201)
-def process_raw_content(
+def process_raw_content_endpoint(
     raw_content_id: int,
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user)
 ):
     """Process raw content to generate insights"""
-    # Verify raw content belongs to user
+    logger.info(f"User {current_user.id} initiated processing for raw_content_id: {raw_content_id}")
+    
     raw_content = db.query(RawContent).join(
         DataSource, RawContent.data_source_id == DataSource.id
     ).join(
@@ -101,17 +113,27 @@ def process_raw_content(
     ).first()
     
     if not raw_content:
-        raise HTTPException(status_code=404, detail="Raw content not found")
+        logger.warning(f"Raw content {raw_content_id} not found for user {current_user.id}.")
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Raw content not found")
     
-    # Process content
-    service = ContentProcessingService()
-    result = service.process_raw_content(raw_content_id, db)
+    try:
+        service = ContentProcessingService()
+        result = service.process_raw_content(raw_content_id, db)
 
-    if not result:
-        raise HTTPException(status_code=404, detail="Failed to process content")
+        if not result:
+            logger.error(f"Content processing failed for raw_content_id: {raw_content_id}")
+            raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail="Failed to process content")
 
-    # Trigger alert processing asynchronously
-    competitor_id = raw_content.data_source.competitor_id
-    process_insight_alerts.delay(result.id, competitor_id)
+        # Trigger alert processing asynchronously
+        competitor_id = raw_content.data_source.competitor_id
+        process_insight_alerts.delay(result.id, competitor_id)
+        logger.info(f"Queued alert processing for new insight {result.id}.")
 
-    return result
+        logger.info(f"Successfully processed raw_content_id: {raw_content_id}, created insight {result.id}.")
+        return result
+    except HTTPException as he:
+        # Re-raise HTTP exceptions to let FastAPI handle them
+        raise he
+    except Exception as e:
+        logger.critical(f"An unexpected error occurred during content processing for {raw_content_id}: {e}", exc_info=True)
+        raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail="An unexpected error occurred.")

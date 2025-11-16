@@ -16,6 +16,7 @@ class RawContent(Base):
     content_hash = Column(String, index=True)  # For deduplication
     scraped_at = Column(DateTime(timezone=True), server_default=func.now())
     created_at = Column(DateTime(timezone=True), server_default=func.now())
+    status = Column(String, default="pending", index=True)  # pending, processing, processed, failed
     
     # Relationships
     data_source = relationship("DataSource", back_populates="raw_contents")

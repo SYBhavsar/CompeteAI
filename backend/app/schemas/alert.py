@@ -5,6 +5,7 @@ from datetime import datetime
 
 class AlertCreate(BaseModel):
     """Schema for creating an alert"""
+    name: str
     competitor_id: Optional[int] = None
     alert_type: str
     conditions: Optional[Dict[str, Any]] = None
@@ -13,6 +14,7 @@ class AlertCreate(BaseModel):
 
 class AlertUpdate(BaseModel):
     """Schema for updating an alert"""
+    name: Optional[str] = None
     alert_type: Optional[str] = None
     conditions: Optional[Dict[str, Any]] = None
     is_active: Optional[bool] = None
@@ -21,6 +23,7 @@ class AlertUpdate(BaseModel):
 class AlertResponse(BaseModel):
     """Schema for alert response"""
     id: int
+    name: str
     user_id: int
     competitor_id: Optional[int]
     alert_type: str

@@ -10,6 +10,7 @@ class Alert(Base):
     __tablename__ = "alerts"
 
     id = Column(Integer, primary_key=True, index=True)
+    name = Column(String(100), nullable=False, index=True)
     user_id = Column(Integer, ForeignKey("users.id"), nullable=False)
     competitor_id = Column(Integer, ForeignKey("competitors.id"), nullable=True)
     alert_type = Column(String(50), nullable=False)  # sentiment_change, new_content, keyword_match

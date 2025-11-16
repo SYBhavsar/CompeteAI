@@ -1,5 +1,9 @@
 from typing import Dict, List, Optional
 from sqlalchemy.orm import Session
+import logging
+
+logger = logging.getLogger(__name__)
+
 
 from app.models import ProcessedInsights
 
@@ -17,6 +21,8 @@ class QualityScoringService:
         Returns:
             Quality score between 0.0 and 1.0
         """
+        logger.debug(f"Calculating quality score for insight_id: {insight.id}")
+        
         # Individual quality factors
         summary_score = self._score_summary_length(insight.summary)
         key_points_score = self._score_key_points_count(insight.key_points or [])
@@ -37,8 +43,12 @@ class QualityScoringService:
             insights_score * weights["insights"] +
             sentiment_score * weights["sentiment"]
         )
-
-        return round(total_score, 2)
+        
+        final_score = round(total_score, 2)
+        logger.info(f"Calculated quality score for insight {insight.id}: {final_score}")
+        logger.debug(f"Component scores for insight {insight.id} - Summary: {summary_score}, Key Points: {key_points_score}, Insights: {insights_score}, Sentiment: {sentiment_score}")
+        
+        return final_score
 
     def _score_summary_length(self, summary: str) -> float:
         """
@@ -154,7 +164,7 @@ class QualityScoringService:
             "neutral": 0.7
         }
 
-        return sentiment_scores.get(sentiment.lower(), 0.5)
+        return sentiment_scores.get(str(sentiment).lower(), 0.5)
 
     def update_quality_scores(
         self,
@@ -171,6 +181,7 @@ class QualityScoringService:
         Returns:
             Dictionary with updated and failed counts
         """
+        logger.info(f"Starting batch update of quality scores for {len(insight_ids)} insights.")
         updated_count = 0
         failed_count = 0
 
@@ -184,13 +195,17 @@ class QualityScoringService:
                     quality_score = self.calculate_quality_score(insight)
                     insight.quality_score = quality_score
                     db.commit()
+                    logger.debug(f"Successfully updated quality score for insight {insight_id} to {quality_score}.")
                     updated_count += 1
                 else:
+                    logger.warning(f"Insight with id {insight_id} not found for quality score update.")
                     failed_count += 1
-            except Exception:
+            except Exception as e:
+                logger.error(f"Failed to update quality score for insight {insight_id}. Error: {e}", exc_info=True)
                 failed_count += 1
                 db.rollback()
 
+        logger.info(f"Batch update of quality scores complete. Updated: {updated_count}, Failed: {failed_count}")
         return {
             "updated": updated_count,
             "failed": failed_count
@@ -206,23 +221,29 @@ class QualityScoringService:
         Returns:
             Dictionary with counts for high, medium, low quality
         """
-        insights = db.query(ProcessedInsights).filter(
-            ProcessedInsights.quality_score.isnot(None)
-        ).all()
+        logger.debug("Fetching quality score distribution.")
+        try:
+            insights = db.query(ProcessedInsights).filter(
+                ProcessedInsights.quality_score.isnot(None)
+            ).all()
 
-        distribution = {
-            "high": 0,    # >= 0.7
-            "medium": 0,  # 0.4 - 0.69
-            "low": 0      # < 0.4
-        }
+            distribution = {
+                "high": 0,    # >= 0.7
+                "medium": 0,  # 0.4 - 0.69
+                "low": 0      # < 0.4
+            }
 
-        for insight in insights:
-            score = insight.quality_score
-            if score >= 0.7:
-                distribution["high"] += 1
-            elif score >= 0.4:
-                distribution["medium"] += 1
-            else:
-                distribution["low"] += 1
-
-        return distribution
+            for insight in insights:
+                score = insight.quality_score
+                if score >= 0.7:
+                    distribution["high"] += 1
+                elif score >= 0.4:
+                    distribution["medium"] += 1
+                else:
+                    distribution["low"] += 1
+            
+            logger.info(f"Quality distribution: High={distribution['high']}, Medium={distribution['medium']}, Low={distribution['low']}")
+            return distribution
+        except Exception as e:
+            logger.error(f"Failed to get quality distribution. Error: {e}", exc_info=True)
+            return {"high": 0, "medium": 0, "low": 0}

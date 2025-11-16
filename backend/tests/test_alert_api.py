@@ -44,6 +44,7 @@ def test_create_alert(client, test_user_and_token):
     headers = test_user_and_token["headers"]
 
     alert_data = {
+        "name": "Test Alert",
         "alert_type": "sentiment_change",
         "conditions": {"threshold": "negative"},
         "is_active": True
@@ -55,6 +56,7 @@ def test_create_alert(client, test_user_and_token):
     data = response.json()
     assert data["alert_type"] == "sentiment_change"
     assert data["is_active"] is True
+    assert data["name"] == "Test Alert"
 
 
 def test_get_all_alerts(client, test_user_and_token):
@@ -73,7 +75,7 @@ def test_get_alert_by_id(client, test_user_and_token):
     headers = test_user_and_token["headers"]
 
     # Create alert first
-    alert_data = {"alert_type": "new_content", "is_active": True}
+    alert_data = {"name": "Test Alert", "alert_type": "new_content", "is_active": True}
     create_response = client.post("/alerts", json=alert_data, headers=headers)
     alert_id = create_response.json()["id"]
 
@@ -89,7 +91,7 @@ def test_update_alert(client, test_user_and_token):
     headers = test_user_and_token["headers"]
 
     # Create alert
-    alert_data = {"alert_type": "new_content", "is_active": True}
+    alert_data = {"name": "Test Alert", "alert_type": "new_content", "is_active": True}
     create_response = client.post("/alerts", json=alert_data, headers=headers)
     alert_id = create_response.json()["id"]
 
@@ -107,14 +109,14 @@ def test_delete_alert(client, test_user_and_token):
     headers = test_user_and_token["headers"]
 
     # Create alert
-    alert_data = {"alert_type": "new_content", "is_active": True}
+    alert_data = {"name": "Test Alert", "alert_type": "new_content", "is_active": True}
     create_response = client.post("/alerts", json=alert_data, headers=headers)
     alert_id = create_response.json()["id"]
 
     # Delete alert
     response = client.delete(f"/alerts/{alert_id}", headers=headers)
 
-    assert response.status_code == 200
+    assert response.status_code == 204
 
 
 def test_get_notifications(client, test_user_and_token):
@@ -151,4 +153,4 @@ def test_mark_notification_read(client, test_user_and_token):
 
     response = client.put(f"/notifications/{notification_id}/read", headers=headers)
 
-    assert response.status_code == 200
+    assert response.status_code == 204

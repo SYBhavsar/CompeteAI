@@ -68,7 +68,7 @@ def test_trigger_scraping_for_competitor(mock_task, client, authenticated_user, 
     
     response = client.post(f"/scraping/competitors/{competitor_id}/scrape", headers=authenticated_user)
     
-    assert response.status_code == 200
+    assert response.status_code == 202
     data = response.json()
     assert data["message"] == "Scraping tasks started"
     assert data["competitor_id"] == competitor_id
@@ -91,7 +91,7 @@ def test_trigger_scraping_for_single_source(mock_task, client, authenticated_use
     
     response = client.post(f"/scraping/sources/{source_id}/scrape", headers=authenticated_user)
     
-    assert response.status_code == 200
+    assert response.status_code == 202
     data = response.json()
     assert data["message"] == "Scraping task started"
     assert data["source_id"] == source_id

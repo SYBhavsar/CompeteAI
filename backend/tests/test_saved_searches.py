@@ -145,8 +145,7 @@ def test_delete_saved_search(client, test_user_and_token):
     # Delete saved search
     response = client.delete(f"/search/saved/{search_id}", headers=headers)
 
-    assert response.status_code == 200
-    assert response.json()["message"] == "Saved search deleted successfully"
+    assert response.status_code == 204
 
     # Verify it's deleted
     get_response = client.get(f"/search/saved/{search_id}", headers=headers)
@@ -218,8 +217,7 @@ def test_clear_search_history(client, test_user_and_token):
     # Clear history
     response = client.delete("/search/history", headers=headers)
 
-    assert response.status_code == 200
-    assert response.json()["message"] == "Search history cleared successfully"
+    assert response.status_code == 204
 
     # Verify history is empty
     history_response = client.get("/search/history", headers=headers)

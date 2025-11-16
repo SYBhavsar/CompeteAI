@@ -1,12 +1,16 @@
-from fastapi import APIRouter, Depends, HTTPException, Query
+from fastapi import APIRouter, Depends, HTTPException, Query, status
 from fastapi.responses import StreamingResponse
 from sqlalchemy.orm import Session
-from sqlalchemy import func
-from datetime import datetime, timedelta
+from sqlalchemy import func, case
+from datetime import datetime, timedelta, timezone
 from typing import Optional, List
 import csv
 import io
 import json
+import logging
+
+logger = logging.getLogger(__name__)
+
 
 from app.core.database import SessionLocal
 from app.models import User, Competitor, ProcessedInsights, RawContent, DataSource
@@ -42,59 +46,45 @@ def get_trends(
     current_user: User = Depends(get_current_user)
 ):
     """Get trend analysis over time"""
-    # Calculate date range
-    end_date = datetime.now()
-    start_date = end_date - timedelta(days=days)
+    logger.info(f"User {current_user.id} requesting trends for {days} days. Competitor: {competitor_id}, Metric: {metric}")
+    try:
+        end_date = datetime.now(timezone.utc)
+        start_date = end_date - timedelta(days=days)
 
-    # Build query
-    query = db.query(ProcessedInsights).join(
-        RawContent, ProcessedInsights.raw_content_id == RawContent.id
-    ).join(
-        DataSource, RawContent.data_source_id == DataSource.id
-    ).join(
-        Competitor, DataSource.competitor_id == Competitor.id
-    ).filter(
-        Competitor.user_id == current_user.id,
-        ProcessedInsights.created_at >= start_date
-    )
+        query = db.query(
+            func.date(ProcessedInsights.created_at),
+            func.count(ProcessedInsights.id),
+            func.avg(
+                case(
+                    (ProcessedInsights.sentiment == 'positive', 1),
+                    (ProcessedInsights.sentiment == 'negative', -1),
+                    else_=0
+                )
+            )
+        ).join(RawContent).join(DataSource).join(Competitor).filter(
+            Competitor.user_id == current_user.id,
+            ProcessedInsights.created_at >= start_date
+        )
 
-    # Apply competitor filter if provided
-    if competitor_id:
-        query = query.filter(Competitor.id == competitor_id)
+        if competitor_id:
+            query = query.filter(Competitor.id == competitor_id)
 
-    insights = query.all()
+        query = query.group_by(func.date(ProcessedInsights.created_at)).order_by(func.date(ProcessedInsights.created_at))
+        
+        results = query.all()
+        
+        trends = [
+            TrendPoint(date=r[0].isoformat(), count=r[1], sentiment_avg=r[2] if metric == 'sentiment' else None)
+            for r in results
+        ]
+        
+        total_insights = sum(t.count for t in trends)
+        logger.info(f"Successfully generated trends for user {current_user.id}. Total insights: {total_insights}")
 
-    # Group by date
-    trends_by_date = {}
-    for insight in insights:
-        date_key = insight.created_at.date().isoformat()
-        if date_key not in trends_by_date:
-            trends_by_date[date_key] = {"count": 0, "sentiments": []}
-
-        trends_by_date[date_key]["count"] += 1
-        if metric == "sentiment":
-            sentiment_value = 1 if insight.sentiment == "positive" else (-1 if insight.sentiment == "negative" else 0)
-            trends_by_date[date_key]["sentiments"].append(sentiment_value)
-
-    # Format response
-    trends = []
-    for date_str in sorted(trends_by_date.keys()):
-        data = trends_by_date[date_str]
-        sentiment_avg = None
-        if metric == "sentiment" and data["sentiments"]:
-            sentiment_avg = sum(data["sentiments"]) / len(data["sentiments"])
-
-        trends.append(TrendPoint(
-            date=date_str,
-            count=data["count"],
-            sentiment_avg=sentiment_avg
-        ))
-
-    return TrendsResponse(
-        trends=trends,
-        period=f"{days} days",
-        total_insights=len(insights)
-    )
+        return TrendsResponse(trends=trends, period=f"{days} days", total_insights=total_insights)
+    except Exception as e:
+        logger.error(f"Error getting trends for user {current_user.id}: {e}", exc_info=True)
+        raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail="Internal server error")
 
 
 @router.get("/analytics/summary/{competitor_id}", response_model=CompetitorSummary)
@@ -104,54 +94,53 @@ def get_competitor_summary(
     current_user: User = Depends(get_current_user)
 ):
     """Get summary statistics for a competitor"""
-    # Verify competitor belongs to user
-    competitor = db.query(Competitor).filter(
-        Competitor.id == competitor_id,
-        Competitor.user_id == current_user.id
-    ).first()
-
+    logger.info(f"User {current_user.id} requesting summary for competitor {competitor_id}.")
+    
+    competitor = db.query(Competitor).filter_by(id=competitor_id, user_id=current_user.id).first()
     if not competitor:
-        raise HTTPException(status_code=404, detail="Competitor not found")
+        logger.warning(f"Competitor {competitor_id} not found for user {current_user.id}.")
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Competitor not found")
 
-    # Get insights
-    insights = db.query(ProcessedInsights).join(
-        RawContent, ProcessedInsights.raw_content_id == RawContent.id
-    ).join(
-        DataSource, RawContent.data_source_id == DataSource.id
-    ).filter(
-        DataSource.competitor_id == competitor_id
-    ).all()
+    try:
+        insights_query = db.query(ProcessedInsights).join(RawContent).join(DataSource).filter(
+            DataSource.competitor_id == competitor_id
+        )
+        
+        total_insights = insights_query.count()
+        
+        sentiment_dist = insights_query.group_by(ProcessedInsights.sentiment).with_entities(
+            ProcessedInsights.sentiment, func.count(ProcessedInsights.id)
+        ).all()
+        sentiment_counts = {s: c for s, c in sentiment_dist}
 
-    # Calculate sentiment distribution
-    sentiment_counts = {"positive": 0, "negative": 0, "neutral": 0}
-    quality_scores = []
+        avg_quality = insights_query.with_entities(func.avg(ProcessedInsights.quality_score)).scalar()
 
-    for insight in insights:
-        sentiment_counts[insight.sentiment] = sentiment_counts.get(insight.sentiment, 0) + 1
-        if insight.quality_score is not None:
-            quality_scores.append(insight.quality_score)
+        recent_insights = insights_query.order_by(ProcessedInsights.created_at.desc()).limit(10).all()
+        recent_activity = [
+            {
+                "summary": insight.summary,
+                "sentiment": insight.sentiment,
+                "created_at": insight.created_at.isoformat()
+            }
+            for insight in recent_insights
+        ]
 
-    avg_quality = sum(quality_scores) / len(quality_scores) if quality_scores else None
-
-    # Get recent activity (last 5 insights)
-    recent = sorted(insights, key=lambda x: x.created_at, reverse=True)[:5]
-    recent_activity = [
-        {
-            "summary": insight.summary,
-            "sentiment": insight.sentiment,
-            "created_at": insight.created_at.isoformat()
-        }
-        for insight in recent
-    ]
-
-    return CompetitorSummary(
-        competitor_id=competitor_id,
-        competitor_name=competitor.name,
-        total_insights=len(insights),
-        sentiment_distribution=SentimentDistribution(**sentiment_counts),
-        average_quality_score=avg_quality,
-        recent_activity=recent_activity
-    )
+        logger.info(f"Successfully generated summary for competitor {competitor_id}.")
+        return CompetitorSummary(
+            competitor_id=competitor_id,
+            competitor_name=competitor.name,
+            total_insights=total_insights,
+            sentiment_distribution=SentimentDistribution(
+                positive=sentiment_counts.get('positive', 0),
+                negative=sentiment_counts.get('negative', 0),
+                neutral=sentiment_counts.get('neutral', 0)
+            ),
+            average_quality_score=avg_quality,
+            recent_activity=recent_activity
+        )
+    except Exception as e:
+        logger.error(f"Error generating summary for competitor {competitor_id}: {e}", exc_info=True)
+        raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail="Internal server error")
 
 
 @router.get("/analytics/comparison", response_model=ComparisonResponse)
@@ -161,55 +150,47 @@ def compare_competitors(
     current_user: User = Depends(get_current_user)
 ):
     """Compare multiple competitors"""
-    # Parse competitor IDs
-    ids = [int(id.strip()) for id in competitor_ids.split(",")]
-
-    comparisons = []
-
-    for competitor_id in ids:
-        competitor = db.query(Competitor).filter(
-            Competitor.id == competitor_id,
-            Competitor.user_id == current_user.id
-        ).first()
-
-        if not competitor:
-            continue
-
-        # Get insights
-        insights = db.query(ProcessedInsights).join(
-            RawContent, ProcessedInsights.raw_content_id == RawContent.id
-        ).join(
-            DataSource, RawContent.data_source_id == DataSource.id
-        ).filter(
-            DataSource.competitor_id == competitor_id
+    logger.info(f"User {current_user.id} comparing competitors: {competitor_ids}")
+    try:
+        ids = [int(id.strip()) for id in competitor_ids.split(",")]
+        
+        # Verify all competitors belong to the user
+        user_competitors = db.query(Competitor.id).filter(
+            Competitor.user_id == current_user.id,
+            Competitor.id.in_(ids)
         ).all()
+        
+        valid_ids = {c[0] for c in user_competitors}
+        if len(valid_ids) != len(ids):
+            logger.warning(f"User {current_user.id} attempted to compare unauthorized or non-existent competitors.")
+            raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="One or more competitors not found or not authorized.")
 
-        if not insights:
-            comparisons.append(CompetitorComparison(
-                competitor_id=competitor_id,
-                competitor_name=competitor.name,
-                total_insights=0,
-                positive_ratio=0.0,
-                average_quality=0.0
-            ))
-            continue
+        results = db.query(
+            DataSource.competitor_id,
+            func.count(ProcessedInsights.id),
+            func.avg(case((ProcessedInsights.sentiment == 'positive', 1.0), else_=0.0)),
+            func.avg(ProcessedInsights.quality_score)
+        ).select_from(Competitor).join(DataSource).join(RawContent).join(ProcessedInsights).filter(
+            Competitor.id.in_(valid_ids)
+        ).group_by(DataSource.competitor_id).all()
 
-        # Calculate metrics
-        positive_count = sum(1 for i in insights if i.sentiment == "positive")
-        positive_ratio = positive_count / len(insights) if insights else 0
+        competitor_map = {c.id: c.name for c in db.query(Competitor).filter(Competitor.id.in_(valid_ids)).all()}
 
-        quality_scores = [i.quality_score for i in insights if i.quality_score is not None]
-        avg_quality = sum(quality_scores) / len(quality_scores) if quality_scores else 0
-
-        comparisons.append(CompetitorComparison(
-            competitor_id=competitor_id,
-            competitor_name=competitor.name,
-            total_insights=len(insights),
-            positive_ratio=round(positive_ratio, 2),
-            average_quality=round(avg_quality, 2)
-        ))
-
-    return ComparisonResponse(comparisons=comparisons)
+        comparisons = [
+            CompetitorComparison(
+                competitor_id=r[0],
+                competitor_name=competitor_map.get(r[0]),
+                total_insights=r[1],
+                positive_ratio=round(r[2], 2) if r[2] is not None else 0.0,
+                average_quality=round(r[3], 2) if r[3] is not None else 0.0
+            ) for r in results
+        ]
+        
+        logger.info(f"Successfully compared {len(comparisons)} competitors for user {current_user.id}.")
+        return ComparisonResponse(comparisons=comparisons)
+    except Exception as e:
+        logger.error(f"Error comparing competitors for user {current_user.id}: {e}", exc_info=True)
+        raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail="Internal server error")
 
 
 @router.get("/analytics/export")
@@ -220,58 +201,32 @@ def export_insights(
     current_user: User = Depends(get_current_user)
 ):
     """Export insights data"""
-    # Build query
-    query = db.query(ProcessedInsights).join(
-        RawContent, ProcessedInsights.raw_content_id == RawContent.id
-    ).join(
-        DataSource, RawContent.data_source_id == DataSource.id
-    ).join(
-        Competitor, DataSource.competitor_id == Competitor.id
-    ).filter(
-        Competitor.user_id == current_user.id
-    )
-
-    if competitor_id:
-        query = query.filter(Competitor.id == competitor_id)
-
-    insights = query.all()
-
-    if format == "csv":
-        # Generate CSV
-        output = io.StringIO()
-        writer = csv.writer(output)
-        writer.writerow(["ID", "Summary", "Sentiment", "Quality Score", "Created At"])
-
-        for insight in insights:
-            writer.writerow([
-                insight.id,
-                insight.summary,
-                insight.sentiment,
-                insight.quality_score or "",
-                insight.created_at.isoformat()
-            ])
-
-        output.seek(0)
-        return StreamingResponse(
-            iter([output.getvalue()]),
-            media_type="text/csv",
-            headers={"Content-Disposition": "attachment; filename=insights.csv"}
+    logger.info(f"User {current_user.id} exporting insights. Competitor: {competitor_id}, Format: {format}")
+    try:
+        query = db.query(ProcessedInsights).join(RawContent).join(DataSource).join(Competitor).filter(
+            Competitor.user_id == current_user.id
         )
-    else:
-        # Generate JSON
-        data = [
-            {
-                "id": insight.id,
-                "summary": insight.summary,
-                "sentiment": insight.sentiment,
-                "insights": insight.insights,
-                "quality_score": insight.quality_score,
-                "created_at": insight.created_at.isoformat()
-            }
-            for insight in insights
-        ]
 
-        return data
+        if competitor_id:
+            query = query.filter(Competitor.id == competitor_id)
+
+        insights = query.all()
+        logger.info(f"Exporting {len(insights)} insights for user {current_user.id}.")
+
+        if format == "csv":
+            output = io.StringIO()
+            writer = csv.writer(output)
+            writer.writerow(["ID", "Summary", "Sentiment", "Quality Score", "URL", "Created At"])
+            for i in insights:
+                writer.writerow([i.id, i.summary, i.sentiment, i.quality_score, i.raw_content.url, i.created_at.isoformat()])
+            output.seek(0)
+            return StreamingResponse(iter([output.getvalue()]), media_type="text/csv", headers={"Content-Disposition": f"attachment; filename=insights_{datetime.now().strftime('%Y%m%d')}.csv"})
+        else:
+            data = [{"id": i.id, "summary": i.summary, "sentiment": i.sentiment, "insights": i.insights, "quality_score": i.quality_score, "url": i.raw_content.url, "created_at": i.created_at.isoformat()} for i in insights]
+            return data
+    except Exception as e:
+        logger.error(f"Error exporting insights for user {current_user.id}: {e}", exc_info=True)
+        raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail="Internal server error")
 
 
 @router.get("/analytics/quality-distribution", response_model=QualityDistribution)
@@ -279,10 +234,22 @@ def get_quality_distribution(
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user)
 ):
-    """Get quality score distribution"""
-    from app.services.quality_scoring_service import QualityScoringService
+    """Get quality score distribution for the user's insights"""
+    logger.debug(f"User {current_user.id} requesting quality distribution.")
+    try:
+        # Efficiently calculate distribution in the database
+        high_quality = func.count(case((ProcessedInsights.quality_score >= 0.7, 1))).label("high")
+        medium_quality = func.count(case(((ProcessedInsights.quality_score >= 0.4) & (ProcessedInsights.quality_score < 0.7), 1))).label("medium")
+        low_quality = func.count(case((ProcessedInsights.quality_score < 0.4, 1))).label("low")
 
-    quality_service = QualityScoringService()
-    distribution = quality_service.get_quality_distribution(db)
-
-    return QualityDistribution(**distribution)
+        distribution = db.query(high_quality, medium_quality, low_quality).join(RawContent).join(DataSource).join(Competitor).filter(
+            Competitor.user_id == current_user.id
+        ).first()
+        
+        dist_dict = {"high": distribution[0], "medium": distribution[1], "low": distribution[2]}
+        logger.info(f"Quality distribution for user {current_user.id}: {dist_dict}")
+        
+        return QualityDistribution(**dist_dict)
+    except Exception as e:
+        logger.error(f"Error getting quality distribution for user {current_user.id}: {e}", exc_info=True)
+        raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail="Internal server error")

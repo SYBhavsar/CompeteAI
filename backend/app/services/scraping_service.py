@@ -2,6 +2,10 @@ import requests
 import hashlib
 from typing import Optional, Dict, Any
 from bs4 import BeautifulSoup
+import logging
+
+logger = logging.getLogger(__name__)
+
 
 
 class ScrapingService:
@@ -16,10 +20,12 @@ class ScrapingService:
     
     def scrape_url(self, url: str) -> Optional[Dict[str, Any]]:
         """Scrape content from a URL"""
+        logger.info(f"Scraping URL: {url}")
         try:
             response = self.session.get(url, timeout=self.timeout)
-            
+
             if response.status_code != 200:
+                logger.warning(f"Scraping failed: {url} | Status: {response.status_code}")
                 return None
             
             content_type = response.headers.get('content-type', '').split(';')[0]

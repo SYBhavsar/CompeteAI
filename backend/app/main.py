@@ -1,6 +1,10 @@
-from fastapi import FastAPI
+from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
+import logging
+import time
 
+from app.core.logging_config import setup_logging, set_user_context, clear_user_context
+from app.utils.jwt import decode_token
 from app.api.auth import router as auth_router
 from app.api.competitors import router as competitors_router
 from app.api.data_sources import router as data_sources_router
@@ -12,11 +16,52 @@ from app.api.analytics import router as analytics_router
 from app.api.alerts import router as alerts_router
 from app.api.websocket import router as websocket_router
 
+# Initialize logging
+setup_logging(log_level="INFO")
+logger = logging.getLogger(__name__)
+
 app = FastAPI(
     title="AI Competitive Intelligence Platform",
     description="Automated competitive intelligence with AI-powered insights",
     version="1.0.0"
 )
+
+
+# Request logging middleware
+@app.middleware("http")
+async def log_requests(request: Request, call_next):
+    """Log all HTTP requests and responses with user context"""
+    start_time = time.time()
+
+    # Extract user_id from JWT token if present
+    user_id = None
+    auth_header = request.headers.get("Authorization")
+    if auth_header and auth_header.startswith("Bearer "):
+        token = auth_header.split(" ")[1]
+        try:
+            payload = decode_token(token)
+            user_id = payload.get("user_id")
+            set_user_context(user_id)
+        except:
+            pass
+
+    # Log request
+    logger.info(f"Request: {request.method} {request.url.path} | Client: {request.client.host}")
+
+    # Process request
+    response = await call_next(request)
+
+    # Log response
+    duration = time.time() - start_time
+    logger.info(
+        f"Response: {request.method} {request.url.path} | "
+        f"Status: {response.status_code} | Duration: {duration:.3f}s"
+    )
+
+    # Clear user context after request
+    clear_user_context()
+
+    return response
 
 # TODO: Lock down CORS for production
 app.add_middleware(

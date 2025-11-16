@@ -76,6 +76,7 @@ def test_check_sentiment_change_alert_triggered(db_session, alert_trigger_servic
     """Test sentiment change alert is triggered when sentiment changes to negative"""
     # Create alert for sentiment change
     alert = Alert(
+        name="Test Sentiment Alert",
         user_id=test_user.id,
         competitor_id=test_competitor.id,
         alert_type="sentiment_change",
@@ -115,6 +116,7 @@ def test_check_sentiment_change_alert_triggered(db_session, alert_trigger_servic
 def test_check_sentiment_change_alert_not_triggered(db_session, alert_trigger_service, test_user, test_competitor, test_data_source):
     """Test sentiment change alert is not triggered for positive sentiment"""
     alert = Alert(
+        name="Test Sentiment Alert",
         user_id=test_user.id,
         competitor_id=test_competitor.id,
         alert_type="sentiment_change",
@@ -150,6 +152,7 @@ def test_check_sentiment_change_alert_not_triggered(db_session, alert_trigger_se
 def test_check_new_content_alert_triggered(db_session, alert_trigger_service, test_user, test_competitor, test_data_source):
     """Test new content alert is triggered when new content is added"""
     alert = Alert(
+        name="Test New Content Alert",
         user_id=test_user.id,
         competitor_id=test_competitor.id,
         alert_type="new_content",
@@ -176,6 +179,7 @@ def test_check_new_content_alert_triggered(db_session, alert_trigger_service, te
 def test_check_keyword_match_alert_triggered(db_session, alert_trigger_service, test_user, test_competitor, test_data_source):
     """Test keyword match alert is triggered when keyword is found"""
     alert = Alert(
+        name="Test Keyword Alert",
         user_id=test_user.id,
         competitor_id=test_competitor.id,
         alert_type="keyword_match",
@@ -211,6 +215,7 @@ def test_check_keyword_match_alert_triggered(db_session, alert_trigger_service, 
 def test_check_keyword_match_alert_not_triggered(db_session, alert_trigger_service, test_user, test_competitor, test_data_source):
     """Test keyword match alert is not triggered when keyword is not found"""
     alert = Alert(
+        name="Test Keyword Alert",
         user_id=test_user.id,
         competitor_id=test_competitor.id,
         alert_type="keyword_match",
@@ -246,6 +251,7 @@ def test_check_keyword_match_alert_not_triggered(db_session, alert_trigger_servi
 def test_create_notification_for_triggered_alert(db_session, alert_trigger_service, test_user, test_competitor):
     """Test notification is created when alert is triggered"""
     alert = Alert(
+        name="Test Notification Alert",
         user_id=test_user.id,
         competitor_id=test_competitor.id,
         alert_type="sentiment_change",
@@ -276,6 +282,7 @@ def test_process_alerts_for_insight(db_session, alert_trigger_service, test_user
     """Test processing all alerts for a new insight"""
     # Create multiple alerts
     alert1 = Alert(
+        name="Test Sentiment Alert",
         user_id=test_user.id,
         competitor_id=test_competitor.id,
         alert_type="sentiment_change",
@@ -283,6 +290,7 @@ def test_process_alerts_for_insight(db_session, alert_trigger_service, test_user
         is_active=True
     )
     alert2 = Alert(
+        name="Test Keyword Alert",
         user_id=test_user.id,
         competitor_id=test_competitor.id,
         alert_type="keyword_match",
@@ -313,7 +321,6 @@ def test_process_alerts_for_insight(db_session, alert_trigger_service, test_user
 
     triggered_count = alert_trigger_service.process_alerts_for_insight(
         insight_id=insight.id,
-        competitor_id=test_competitor.id,
         db=db_session
     )
 

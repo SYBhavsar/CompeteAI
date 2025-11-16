@@ -1,6 +1,10 @@
 import os
 from typing import List, Dict, Any, Optional
 from pinecone import Pinecone, ServerlessSpec
+import logging
+
+logger = logging.getLogger(__name__)
+
 
 
 class PineconeClient:
@@ -8,24 +12,35 @@ class PineconeClient:
 
     def __init__(self):
         """Initialize Pinecone client and index"""
-        api_key = os.getenv("PINECONE_API_KEY")
-        self.index_name = os.getenv("PINECONE_INDEX_NAME", "competitive-intel")
+        try:
+            api_key = os.getenv("PINECONE_API_KEY")
+            self.index_name = os.getenv("PINECONE_INDEX_NAME", "competitive-intel")
 
-        # Initialize Pinecone
-        self.pc = Pinecone(api_key=api_key)
+            if not api_key:
+                logger.error("PINECONE_API_KEY not found in environment variables.")
+                raise ValueError("PINECONE_API_KEY is required.")
 
-        # Create index if it doesn't exist
-        self._ensure_index_exists()
+            # Initialize Pinecone
+            self.pc = Pinecone(api_key=api_key)
+            logger.info("Pinecone client initialized.")
 
-        # Connect to index
-        self.index = self.pc.Index(self.index_name)
+            # Create index if it doesn't exist
+            self._ensure_index_exists()
+
+            # Connect to index
+            self.index = self.pc.Index(self.index_name)
+            logger.info(f"Connected to Pinecone index: {self.index_name}")
+
+        except Exception as e:
+            logger.critical(f"Failed to initialize PineconeClient: {e}", exc_info=True)
+            raise
 
     def _ensure_index_exists(self):
         """Create index if it doesn't exist"""
         try:
             existing_indexes = self.pc.list_indexes().names()
-
             if self.index_name not in existing_indexes:
+                logger.info(f"Index '{self.index_name}' not found. Creating new index...")
                 self.pc.create_index(
                     name=self.index_name,
                     dimension=1536,  # OpenAI embedding dimension
@@ -35,9 +50,13 @@ class PineconeClient:
                         region="us-east-1"
                     )
                 )
-        except Exception:
-            # Index might already exist or creation failed
-            pass
+                logger.info(f"Index '{self.index_name}' created successfully.")
+            else:
+                logger.info(f"Index '{self.index_name}' already exists.")
+        except Exception as e:
+            logger.error(f"Error checking or creating index '{self.index_name}': {e}", exc_info=True)
+            # If index creation fails, it's a critical issue for the service's operation.
+            raise
 
     def upsert_embedding(
         self,
@@ -56,6 +75,7 @@ class PineconeClient:
         Returns:
             True if successful, False otherwise
         """
+        logger.debug(f"Upserting vector_id: {vector_id}")
         try:
             self.index.upsert(
                 vectors=[
@@ -66,8 +86,10 @@ class PineconeClient:
                     }
                 ]
             )
+            logger.info(f"Successfully upserted vector_id: {vector_id}")
             return True
-        except Exception:
+        except Exception as e:
+            logger.error(f"Failed to upsert vector_id: {vector_id}. Error: {e}", exc_info=True)
             return False
 
     def query_similar(
@@ -87,6 +109,7 @@ class PineconeClient:
         Returns:
             List of similar vectors with metadata
         """
+        logger.debug(f"Querying for {top_k} similar vectors.")
         try:
             query_params = {
                 "vector": query_vector,
@@ -98,18 +121,21 @@ class PineconeClient:
                 query_params["filter"] = filter
 
             results = self.index.query(**query_params)
-
+            
             # Format results
             matches = []
-            for match in results.matches:
-                matches.append({
-                    "id": match.id,
-                    "score": match.score,
-                    "metadata": match.metadata
-                })
-
+            if results.matches:
+                for match in results.matches:
+                    matches.append({
+                        "id": match.id,
+                        "score": match.score,
+                        "metadata": match.metadata
+                    })
+            
+            logger.info(f"Query returned {len(matches)} results.")
             return matches
-        except Exception:
+        except Exception as e:
+            logger.error(f"Failed to query similar vectors. Error: {e}", exc_info=True)
             return []
 
     def delete_vectors(self, ids: List[str]) -> bool:
@@ -122,10 +148,13 @@ class PineconeClient:
         Returns:
             True if successful, False otherwise
         """
+        logger.debug(f"Deleting {len(ids)} vectors.")
         try:
             self.index.delete(ids=ids)
+            logger.info(f"Successfully deleted {len(ids)} vectors.")
             return True
-        except Exception:
+        except Exception as e:
+            logger.error(f"Failed to delete vectors. Error: {e}", exc_info=True)
             return False
 
     def get_index_stats(self) -> Dict[str, Any]:
@@ -135,10 +164,14 @@ class PineconeClient:
         Returns:
             Dictionary with index stats
         """
+        logger.debug("Fetching index stats.")
         try:
             stats = self.index.describe_index_stats()
+            total_vectors = stats.get('total_vector_count', 0)
+            logger.info(f"Index stats: total_vectors={total_vectors}")
             return {
-                "total_vectors": stats.total_vector_count
+                "total_vectors": total_vectors
             }
-        except Exception:
+        except Exception as e:
+            logger.error(f"Failed to get index stats. Error: {e}", exc_info=True)
             return {"total_vectors": 0}

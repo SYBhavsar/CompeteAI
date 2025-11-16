@@ -13,11 +13,13 @@ def mock_pinecone():
 
 
 @pytest.fixture
+@patch.dict('os.environ', {'PINECONE_API_KEY': 'test_api_key', 'PINECONE_INDEX_NAME': 'test_index'})
 def pinecone_client(mock_pinecone):
     """Create Pinecone client with mocked Pinecone"""
     return PineconeClient()
 
 
+@patch.dict('os.environ', {'PINECONE_API_KEY': 'test_api_key', 'PINECONE_INDEX_NAME': 'test_index'})
 def test_pinecone_client_initialization(mock_pinecone):
     """Test Pinecone client initializes correctly"""
     client = PineconeClient()
@@ -28,6 +30,7 @@ def test_pinecone_client_initialization(mock_pinecone):
     mock_pinecone.assert_called_once()
 
 
+@patch.dict('os.environ', {'PINECONE_API_KEY': 'test_api_key', 'PINECONE_INDEX_NAME': 'test_index'})
 def test_create_index_if_not_exists(mock_pinecone):
     """Test index creation when it doesn't exist"""
     mock_pc = Mock()
@@ -141,8 +144,8 @@ def test_delete_vectors_error_handling(pinecone_client):
 def test_get_index_stats(pinecone_client):
     """Test getting index statistics"""
     mock_index = Mock()
-    mock_stats = Mock()
-    mock_stats.total_vector_count = 1000
+    mock_stats = MagicMock()
+    mock_stats.get.return_value = 1000
     mock_index.describe_index_stats.return_value = mock_stats
 
     pinecone_client.index = mock_index

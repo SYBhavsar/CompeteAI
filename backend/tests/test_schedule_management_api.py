@@ -131,8 +131,7 @@ def test_delete_schedule(client, authenticated_user, test_data_source_with_sched
     
     response = client.delete(f"/schedules/{schedule_id}", headers=authenticated_user)
     
-    assert response.status_code == 200
-    assert response.json()["message"] == "Schedule deleted successfully"
+    assert response.status_code == 204
     
     # Verify schedule is deleted
     source_id = test_data_source_with_schedule["source"]["id"]

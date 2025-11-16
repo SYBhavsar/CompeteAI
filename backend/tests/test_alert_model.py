@@ -29,6 +29,7 @@ def test_create_alert(db_session: Session):
     db_session.commit()
 
     alert = Alert(
+        name="Test Alert",
         user_id=user.id,
         alert_type="sentiment_change",
         conditions={"threshold": "negative"},
@@ -61,6 +62,7 @@ def test_alert_with_competitor(db_session: Session):
     db_session.commit()
 
     alert = Alert(
+        name="Test Competitor Alert",
         user_id=user.id,
         competitor_id=competitor.id,
         alert_type="new_content",
