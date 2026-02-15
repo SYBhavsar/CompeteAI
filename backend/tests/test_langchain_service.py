@@ -5,6 +5,17 @@ from app.services.langchain_service import LangChainService
 
 
 @pytest.fixture
+def mock_settings():
+    """Mock settings for LangChain"""
+    with patch('app.services.langchain_service.settings') as mock:
+        mock.openai_api_key = "test-api-key"
+        mock.openai_model = "gpt-3.5-turbo"
+        mock.openai_temperature = 0.3
+        mock.openai_max_tokens = 500
+        yield mock
+
+
+@pytest.fixture
 def mock_openai():
     """Mock OpenAI for LangChain"""
     with patch('app.services.langchain_service.ChatOpenAI') as mock:
@@ -14,12 +25,12 @@ def mock_openai():
 
 
 @pytest.fixture
-def langchain_service(mock_openai):
-    """Create LangChain service with mocked OpenAI"""
+def langchain_service(mock_settings, mock_openai):
+    """Create LangChain service with mocked OpenAI and settings"""
     return LangChainService()
 
 
-def test_langchain_service_initialization():
+def test_langchain_service_initialization(mock_settings, mock_openai):
     """Test that the LangChainService can be initialized"""
     service = LangChainService()
     assert service is not None
@@ -113,7 +124,7 @@ def test_custom_prompt_template_formatting(langchain_service):
     assert content in prompt
 
 
-def test_error_handling_in_chain(mock_openai):
+def test_error_handling_in_chain(mock_settings, mock_openai):
     """Test error handling when LLM fails"""
     mock_openai.invoke.side_effect = Exception("API Error")
 

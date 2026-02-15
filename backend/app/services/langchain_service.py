@@ -6,6 +6,7 @@ from langchain.chains import LLMChain
 import logging
 from openai import OpenAIError
 
+from app.core.config import settings
 from app.utils.retry import retry_with_backoff
 
 logger = logging.getLogger(__name__)
@@ -18,14 +19,14 @@ class LangChainService:
     def __init__(self):
         """Initialize LangChain service with OpenAI LLM"""
         try:
-            api_key = os.getenv("OPENAI_API_KEY")
+            api_key = settings.openai_api_key
             if not api_key:
                 logger.error("OPENAI_API_KEY not found in environment variables.")
                 raise ValueError("OPENAI_API_KEY is required for LangChainService.")
 
             self.llm = ChatOpenAI(
-                model="gpt-3.5-turbo",
-                temperature=0.3,
+                model=settings.openai_model,
+                temperature=settings.openai_temperature,
                 openai_api_key=api_key
             )
             logger.info("LangChainService initialized successfully with gpt-3.5-turbo.")

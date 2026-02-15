@@ -4,6 +4,7 @@ import logging
 import time
 
 from app.core.logging_config import setup_logging, set_user_context, clear_user_context
+from app.core.database import Base, engine
 from app.utils.jwt import decode_token
 from app.api.auth import router as auth_router
 from app.api.competitors import router as competitors_router
@@ -25,6 +26,17 @@ app = FastAPI(
     description="Automated competitive intelligence with AI-powered insights",
     version="1.0.0"
 )
+
+
+@app.on_event("startup")
+async def startup_event():
+    """Create database tables on startup"""
+    # Import all models to ensure they're registered with SQLAlchemy
+    from app import models
+
+    logger.info("Creating database tables...")
+    Base.metadata.create_all(bind=engine)
+    logger.info("✅ Database tables ready")
 
 
 # Request logging middleware

@@ -6,5 +6,20 @@ from .raw_content import RawContent
 from .scraping_schedule import ScrapingSchedule
 from .processed_insights import ProcessedInsights
 from .alert import Alert, Notification
+from .competitive_snapshot import CompetitiveSnapshot
+from .change_detection import ChangeEvent
+from .timeline import CompetitorTimeline
 
-__all__ = ["User", "Competitor", "DataSource", "RawContent", "ScrapingSchedule", "ProcessedInsights", "Alert", "Notification"]
+__all__ = [
+    "User",
+    "Competitor",
+    "DataSource",
+    "RawContent",
+    "ScrapingSchedule",
+    "ProcessedInsights",
+    "Alert",
+    "Notification",
+    "CompetitiveSnapshot",
+    "ChangeEvent",
+    "CompetitorTimeline"
+]

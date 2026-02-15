@@ -14,7 +14,7 @@ class OpenAIClient:
 
     def __init__(self, model: Optional[str] = None):
         try:
-            api_key = os.getenv("OPENAI_API_KEY")
+            api_key = settings.openai_api_key
             if not api_key:
                 logger.error("OPENAI_API_KEY not found in environment variables.")
                 raise ValueError("OPENAI_API_KEY is required for OpenAIClient.")
