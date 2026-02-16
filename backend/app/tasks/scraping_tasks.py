@@ -65,10 +65,11 @@ def scrape_data_source(data_source_id: int) -> Dict[str, Any]:
         db.refresh(raw_content)
         
         logger.info(f"Successfully saved new raw content {raw_content.id} for data source {data_source_id}.")
-        
-        # Optional: Trigger content processing task
-        # from .processing_tasks import process_raw_content_task
-        # process_raw_content_task.delay(raw_content.id)
+
+        # Trigger historical snapshot creation
+        from app.tasks.historical_tasks import create_snapshot_from_content
+        logger.info(f"Triggering snapshot creation for raw content {raw_content.id}")
+        create_snapshot_from_content.delay(raw_content.id)
 
         return {
             "status": "success",
