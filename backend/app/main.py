@@ -17,6 +17,7 @@ from app.api.analytics import router as analytics_router
 from app.api.alerts import router as alerts_router
 from app.api.websocket import router as websocket_router
 from app.api.historical_intelligence import router as historical_router
+from app.api.strategic_intelligence import router as strategic_router
 
 # Initialize logging
 setup_logging(log_level="INFO")
@@ -96,6 +97,7 @@ app.include_router(analytics_router, tags=["analytics"])
 app.include_router(alerts_router, tags=["alerts"])
 app.include_router(websocket_router, tags=["websocket"])
 app.include_router(historical_router, tags=["historical"])
+app.include_router(strategic_router, tags=["strategic"])
 
 @app.get("/")
 async def root():

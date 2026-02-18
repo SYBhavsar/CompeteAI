@@ -9,6 +9,9 @@ from .alert import Alert, Notification
 from .competitive_snapshot import CompetitiveSnapshot
 from .change_detection import ChangeEvent
 from .timeline import CompetitorTimeline
+from .strategic_event import StrategicEvent
+from .entity import Entity
+from .entity_relationship import EntityRelationship
 
 __all__ = [
     "User",
@@ -21,5 +24,8 @@ __all__ = [
     "Notification",
     "CompetitiveSnapshot",
     "ChangeEvent",
-    "CompetitorTimeline"
+    "CompetitorTimeline",
+    "StrategicEvent",
+    "Entity",
+    "EntityRelationship"
 ]

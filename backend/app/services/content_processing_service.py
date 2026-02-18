@@ -6,6 +6,8 @@ from sqlalchemy.orm import Session
 from app.models import RawContent, ProcessedInsights
 from app.services.openai_client import OpenAIClient
 from app.services.quality_scoring_service import QualityScoringService
+from app.services.entity_extraction_service import EntityExtractionService
+from app.services.strategic_detection_service import StrategicDetectionService
 
 logger = logging.getLogger(__name__)
 
@@ -17,6 +19,8 @@ class ContentProcessingService:
         try:
             self.openai_client = openai_client or OpenAIClient()
             self.quality_scorer = QualityScoringService()
+            self.entity_extractor = EntityExtractionService()
+            self.strategic_detector = StrategicDetectionService()
             logger.info("ContentProcessingService initialized successfully.")
         except Exception as e:
             logger.critical(f"Failed to initialize ContentProcessingService: {e}", exc_info=True)
@@ -88,6 +92,10 @@ class ContentProcessingService:
             db.refresh(processed_insights)
 
             logger.info(f"Successfully processed content {raw_content_id}. Insight ID: {processed_insights.id}, Quality Score: {quality_score}")
+
+            # Run strategic intelligence pipeline
+            self._run_strategic_pipeline(raw_content, processed_insights, db)
+
             return processed_insights
 
         except Exception as e:
@@ -100,6 +108,40 @@ class ContentProcessingService:
                 db.commit()
             return None
     
+    def _run_strategic_pipeline(self, raw_content: RawContent, insight: ProcessedInsights, db: Session) -> None:
+        """
+        Run entity extraction and strategic detection after insight creation.
+
+        Errors in this pipeline do NOT affect the main insight - logged only.
+        competitor_id is resolved via raw_content → data_source → competitor_id
+        """
+        competitor_id = raw_content.data_source.competitor_id
+        content = raw_content.content
+
+        # Step 1: Extract entities (graceful on failure)
+        entities = []
+        try:
+            entities = self.entity_extractor.extract_entities(
+                content=content,
+                competitor_id=competitor_id,
+                db=db
+            )
+            logger.info(f"Extracted {len(entities)} entities for competitor {competitor_id}")
+        except Exception as e:
+            logger.error(f"Entity extraction failed for content {raw_content.id}: {e}", exc_info=True)
+
+        # Step 2: Detect strategic moves (graceful on failure)
+        try:
+            events = self.strategic_detector.detect_strategic_moves(
+                content=content,
+                competitor_id=competitor_id,
+                entities=entities,
+                db=db
+            )
+            logger.info(f"Detected {len(events)} strategic events for competitor {competitor_id}")
+        except Exception as e:
+            logger.error(f"Strategic detection failed for content {raw_content.id}: {e}", exc_info=True)
+
     def _extract_key_points(self, content: str) -> List[str]:
         """Extract key points from content using simple text processing"""
         logger.debug("Extracting key points from content.")
