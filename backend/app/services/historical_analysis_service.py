@@ -11,9 +11,10 @@ import logging
 from typing import List, Optional, Dict, Any
 from sqlalchemy.orm import Session
 
+from app.core.llm_factory import LLMFactory
+from app.core.prompt_loader import PromptLoader
 from app.models.competitive_snapshot import CompetitiveSnapshot
 from app.models.change_detection import ChangeEvent
-from app.services.langchain_service import LangChainService
 
 logger = logging.getLogger(__name__)
 
@@ -27,8 +28,8 @@ class HistoricalAnalysisService:
     """
 
     def __init__(self):
-        """Initialize with LangChain service dependency"""
-        self.langchain_service = LangChainService()
+        """Initialize with LLM from LLMFactory (provider/model configurable)."""
+        self.llm = LLMFactory.create("historical_analysis")
         logger.info("HistoricalAnalysisService initialized successfully")
 
     def detect_changes(
@@ -135,7 +136,7 @@ class HistoricalAnalysisService:
         after_data: Dict[str, Any]
     ) -> str:
         """
-        Use LangChain to perform semantic analysis of changes.
+        Use LLM to perform semantic analysis of changes.
 
         Args:
             before_data: Snapshot data before changes
@@ -143,49 +144,23 @@ class HistoricalAnalysisService:
 
         Returns:
             JSON string with analysis results
-
-        Follows: Single Responsibility - delegates AI analysis to LangChain
         """
-        prompt = f"""
-        You are a competitive intelligence analyst. Compare these two snapshots and identify strategic changes.
-
-        BEFORE:
-        {json.dumps(before_data, indent=2)}
-
-        AFTER:
-        {json.dumps(after_data, indent=2)}
-
-        Analyze the changes and respond with JSON in this exact format:
-        {{
-            "change_type": "pricing|positioning|messaging|features|partnership|leadership|technology|none",
-            "severity": "minor|moderate|major|critical|none",
-            "change_summary": "Concise description of what changed",
-            "strategic_impact": "What this means strategically and competitively",
-            "confidence_score": 0.0-1.0
-        }}
-
-        If multiple significant changes exist, use this format:
-        {{
-            "changes": [
-                {{change object 1}},
-                {{change object 2}}
+        try:
+            prompt_config = PromptLoader.load("historical_analysis")
+            user_msg = prompt_config.user_prompt.format(
+                before_data=json.dumps(before_data, indent=2),
+                after_data=json.dumps(after_data, indent=2),
+            )
+            from langchain.schema import SystemMessage, HumanMessage
+            messages = [
+                SystemMessage(content=prompt_config.system_prompt),
+                HumanMessage(content=user_msg),
             ]
-        }}
-
-        If no significant changes, return:
-        {{
-            "change_type": "none",
-            "severity": "none",
-            "change_summary": "No significant changes detected",
-            "strategic_impact": "N/A",
-            "confidence_score": 1.0
-        }}
-
-        Respond ONLY with valid JSON, no additional text.
-        """
-
-        result = self.langchain_service.analyze_competitive_intelligence(prompt)
-        return result or "{}"
+            response = self.llm.invoke(messages)
+            return response.content or "{}"
+        except Exception as e:
+            logger.error(f"Error in LLM analysis: {e}", exc_info=True)
+            return "{}"
 
     def _create_change_events(
         self,

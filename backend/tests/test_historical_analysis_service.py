@@ -58,11 +58,10 @@ def test_competitor(db, test_user):
 
 @pytest.fixture
 def mock_langchain():
-    """Mock LangChain service"""
-    with patch('app.services.historical_analysis_service.LangChainService') as mock:
-        mock_instance = Mock()
-        mock.return_value = mock_instance
-        yield mock_instance
+    """Mock LLMFactory.create to control the LLM used by HistoricalAnalysisService."""
+    mock_llm = Mock()
+    with patch('app.core.llm_factory.LLMFactory.create', return_value=mock_llm):
+        yield mock_llm
 
 
 class TestHistoricalAnalysisService:
@@ -72,11 +71,11 @@ class TestHistoricalAnalysisService:
         """
         GIVEN: HistoricalAnalysisService class
         WHEN: Initializing the service
-        THEN: Service is created with LangChain dependency
+        THEN: Service is created with LLM dependency
         """
         service = HistoricalAnalysisService()
         assert service is not None
-        assert hasattr(service, 'langchain_service')
+        assert hasattr(service, 'llm')
 
     def test_detect_pricing_change(self, db, test_competitor, mock_langchain):
         """
@@ -107,8 +106,8 @@ class TestHistoricalAnalysisService:
         db.add(snapshot_after)
         db.commit()
 
-        # Mock LangChain response
-        mock_langchain.analyze_competitive_intelligence.return_value = """
+        # Mock LLM response
+        mock_langchain.invoke.return_value = Mock(content="""
         {
             "change_type": "pricing",
             "severity": "major",
@@ -116,7 +115,7 @@ class TestHistoricalAnalysisService:
             "strategic_impact": "Potential opportunity to win price-sensitive customers",
             "confidence_score": 0.95
         }
-        """
+        """)
 
         # Run change detection
         service = HistoricalAnalysisService()
@@ -164,8 +163,8 @@ class TestHistoricalAnalysisService:
         db.add(snapshot_after)
         db.commit()
 
-        # Mock LangChain analysis
-        mock_langchain.analyze_competitive_intelligence.return_value = """
+        # Mock LLM analysis
+        mock_langchain.invoke.return_value = Mock(content="""
         {
             "change_type": "positioning",
             "severity": "moderate",
@@ -173,7 +172,7 @@ class TestHistoricalAnalysisService:
             "strategic_impact": "Moving upmarket - opportunity in abandoned SMB segment",
             "confidence_score": 0.88
         }
-        """
+        """)
 
         service = HistoricalAnalysisService()
         changes = service.detect_changes(
@@ -215,7 +214,7 @@ class TestHistoricalAnalysisService:
         db.commit()
 
         # Mock: No significant changes
-        mock_langchain.analyze_competitive_intelligence.return_value = """
+        mock_langchain.invoke.return_value = Mock(content="""
         {
             "change_type": "none",
             "severity": "none",
@@ -223,7 +222,7 @@ class TestHistoricalAnalysisService:
             "strategic_impact": "N/A",
             "confidence_score": 1.0
         }
-        """
+        """)
 
         service = HistoricalAnalysisService()
         changes = service.detect_changes(
@@ -255,7 +254,7 @@ class TestHistoricalAnalysisService:
         db.commit()
 
         # Mock response
-        mock_langchain.analyze_competitive_intelligence.return_value = """
+        mock_langchain.invoke.return_value = Mock(content="""
         {
             "change_type": "update",
             "severity": "minor",
@@ -263,7 +262,7 @@ class TestHistoricalAnalysisService:
             "strategic_impact": "Routine update, no strategic significance",
             "confidence_score": 0.75
         }
-        """
+        """)
 
         service = HistoricalAnalysisService()
         changes = service.analyze_latest_snapshots(
@@ -297,7 +296,7 @@ class TestHistoricalAnalysisService:
         db.commit()
 
         # Mock critical change (50% price drop)
-        mock_langchain.analyze_competitive_intelligence.return_value = """
+        mock_langchain.invoke.return_value = Mock(content="""
         {
             "change_type": "pricing",
             "severity": "critical",
@@ -305,7 +304,7 @@ class TestHistoricalAnalysisService:
             "strategic_impact": "Highly aggressive pricing move - immediate response needed",
             "confidence_score": 0.97
         }
-        """
+        """)
 
         service = HistoricalAnalysisService()
         changes = service.detect_changes(
@@ -339,7 +338,7 @@ class TestHistoricalAnalysisService:
         db.add(snapshot_after)
         db.commit()
 
-        mock_langchain.analyze_competitive_intelligence.return_value = """
+        mock_langchain.invoke.return_value = Mock(content="""
         {
             "change_type": "messaging",
             "severity": "moderate",
@@ -347,7 +346,7 @@ class TestHistoricalAnalysisService:
             "strategic_impact": "Test impact",
             "confidence_score": 0.82
         }
-        """
+        """)
 
         service = HistoricalAnalysisService()
         changes = service.detect_changes(
@@ -390,7 +389,7 @@ class TestHistoricalAnalysisService:
         db.commit()
 
         # Mock: Multiple changes detected
-        mock_langchain.analyze_competitive_intelligence.return_value = """
+        mock_langchain.invoke.return_value = Mock(content="""
         {
             "changes": [
                 {
@@ -409,7 +408,7 @@ class TestHistoricalAnalysisService:
                 }
             ]
         }
-        """
+        """)
 
         service = HistoricalAnalysisService()
         changes = service.detect_changes(

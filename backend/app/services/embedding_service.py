@@ -1,25 +1,21 @@
 from typing import List, Dict, Any, Optional
 from sqlalchemy.orm import Session
 import logging
+from openai import OpenAI
+
+from app.core.config import settings
+from app.models import ProcessedInsights, RawContent, DataSource
+from app.services.pinecone_client import PineconeClient
 
 logger = logging.getLogger(__name__)
-
-
-from app.models import ProcessedInsights, RawContent, DataSource
-from app.services.openai_client import OpenAIClient
-from app.services.pinecone_client import PineconeClient
 
 
 class EmbeddingService:
     """Service for generating and managing embeddings for semantic search"""
 
-    def __init__(
-        self,
-        openai_client: Optional[OpenAIClient] = None,
-        pinecone_client: Optional[PineconeClient] = None
-    ):
+    def __init__(self, pinecone_client: Optional[PineconeClient] = None):
         try:
-            self.openai_client = openai_client or OpenAIClient()
+            self._client = OpenAI(api_key=settings.openai_api_key)
             self.pinecone_client = pinecone_client or PineconeClient()
             logger.info("EmbeddingService initialized successfully.")
         except Exception as e:
@@ -44,7 +40,7 @@ class EmbeddingService:
                 text = text[:max_tokens * 4]
                 logger.warning("Input text truncated for embedding generation.")
 
-            response = self.openai_client.client.embeddings.create(
+            response = self._client.embeddings.create(
                 model="text-embedding-ada-002",
                 input=text
             )

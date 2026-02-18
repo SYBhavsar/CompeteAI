@@ -5,36 +5,24 @@ from app.services.langchain_service import LangChainService
 
 
 @pytest.fixture
-def mock_settings():
-    """Mock settings for LangChain"""
-    with patch('app.services.langchain_service.settings') as mock:
-        mock.openai_api_key = "test-api-key"
-        mock.openai_model = "gpt-3.5-turbo"
-        mock.openai_temperature = 0.3
-        mock.openai_max_tokens = 500
-        yield mock
-
-
-@pytest.fixture
 def mock_openai():
-    """Mock OpenAI for LangChain"""
-    with patch('app.services.langchain_service.ChatOpenAI') as mock:
-        mock_instance = Mock()
-        mock.return_value = mock_instance
-        yield mock_instance
+    """Mock LLM instance returned by LLMFactory.create for all service calls."""
+    mock_llm = Mock()
+    with patch('app.core.llm_factory.LLMFactory.create', return_value=mock_llm):
+        yield mock_llm
 
 
 @pytest.fixture
-def langchain_service(mock_settings, mock_openai):
-    """Create LangChain service with mocked OpenAI and settings"""
+def langchain_service(mock_openai):
+    """Create LangChain service with mocked LLM factory."""
     return LangChainService()
 
 
-def test_langchain_service_initialization(mock_settings, mock_openai):
+def test_langchain_service_initialization(mock_openai):
     """Test that the LangChainService can be initialized"""
     service = LangChainService()
     assert service is not None
-    assert hasattr(service, 'llm')
+    assert hasattr(service, '_llm_cache')
 
 
 def test_analyze_competitive_intelligence(langchain_service, mock_openai):
@@ -120,11 +108,10 @@ def test_custom_prompt_template_formatting(langchain_service):
     prompt = langchain_service._create_competitive_analysis_prompt(content)
 
     assert prompt is not None
-    assert "competitive intelligence" in prompt.lower()
     assert content in prompt
 
 
-def test_error_handling_in_chain(mock_settings, mock_openai):
+def test_error_handling_in_chain(mock_openai):
     """Test error handling when LLM fails"""
     mock_openai.invoke.side_effect = Exception("API Error")
 

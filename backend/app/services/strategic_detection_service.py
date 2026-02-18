@@ -14,11 +14,11 @@ from datetime import datetime
 from pydantic import BaseModel, Field
 from sqlalchemy.orm import Session
 
-from langchain_openai import ChatOpenAI
 from langchain.prompts import ChatPromptTemplate
 from langchain.output_parsers import PydanticOutputParser
 
-from app.core.config import settings
+from app.core.llm_factory import LLMFactory
+from app.core.prompt_loader import PromptLoader
 from app.models.strategic_event import StrategicEvent
 from app.models.entity import Entity
 
@@ -69,22 +69,10 @@ class StrategicDetectionService:
     """
 
     def __init__(self):
-        """
-        Initialize with GPT-4 for strategic reasoning.
-
-        Uses GPT-4 for complex analysis:
-        - Superior strategic understanding
-        - Better entity recognition in context
-        - More nuanced implication analysis
-        - Worth the premium for high-value events
-        """
+        """Initialize with LangChain LLM via LLMFactory (provider/model configurable)."""
         try:
-            self.llm = ChatOpenAI(
-                model="gpt-4",
-                temperature=0.2,  # Low but not 0 for nuanced reasoning
-                openai_api_key=settings.openai_api_key
-            )
-            logger.info("StrategicDetectionService initialized successfully with GPT-4")
+            self.llm = LLMFactory.create("strategic_detection")
+            logger.info("StrategicDetectionService initialized successfully")
         except Exception as e:
             logger.error(f"Failed to initialize StrategicDetectionService: {e}", exc_info=True)
             raise
@@ -120,8 +108,8 @@ class StrategicDetectionService:
             # Build entity context
             entity_context = self._build_entity_context(entities)
 
-            # Analyze content with GPT-4
-            detected_events = self._analyze_with_gpt4(content, entity_context)
+            # Analyze content with LLM
+            detected_events = self._analyze_with_llm(content, entity_context)
 
             if not detected_events:
                 logger.info("No strategic moves detected")
@@ -166,13 +154,13 @@ class StrategicDetectionService:
 
         return "Known entities:\n" + "\n".join(context_parts)
 
-    def _analyze_with_gpt4(
+    def _analyze_with_llm(
         self,
         content: str,
         entity_context: str
     ) -> List[Dict[str, Any]]:
         """
-        Analyze content with GPT-4 to detect strategic moves.
+        Analyze content with LLM to detect strategic moves.
 
         Args:
             content: Text content
@@ -180,46 +168,19 @@ class StrategicDetectionService:
 
         Returns:
             List of detected event dictionaries
-
-        Follows: Strategy Pattern - different prompts for different analyses
         """
         try:
-            # Create strategic detection prompt
+            prompt_config = PromptLoader.load("strategic_detection")
+            system = prompt_config.system_prompt.format(entity_context=entity_context)
+
             prompt = ChatPromptTemplate.from_messages([
-                ("system", """You are a competitive intelligence analyst specializing in strategic move detection.
-
-Your task: Analyze competitor content and identify high-value strategic moves.
-
-Categories to detect:
-1. market_entry - Geographic or vertical market expansion
-2. acquisition - M&A activity, company purchases
-3. partnership - Strategic alliances, integrations, collaborations
-4. product_launch - Major new products or features
-5. pricing_change - Significant pricing adjustments (increases or decreases)
-6. leadership_change - Executive hires, departures, role changes
-7. funding - Funding rounds (Series A/B/C, etc.)
-
-For EACH strategic move found:
-- Determine the category
-- Assign confidence score (0.8-1.0 for clear moves, 0.6-0.79 for probable)
-- Create concise title
-- Write detailed description
-- Analyze strategic implications and competitive impact
-- Extract key entities involved
-
-Return JSON array of events. Return empty array [] if no strategic moves detected.
-
-{entity_context}"""),
-                ("human", "{content}")
+                ("system", system),
+                ("human", "{content}"),
             ])
 
-            # Invoke LLM
-            logger.debug("Invoking GPT-4 for strategic detection")
+            logger.debug("Invoking LLM for strategic detection")
             response = self.llm.invoke(
-                prompt.format_messages(
-                    content=content,
-                    entity_context=entity_context
-                )
+                prompt.format_messages(content=content)
             )
 
             # Parse response
@@ -234,7 +195,7 @@ Return JSON array of events. Return empty array [] if no strategic moves detecte
                 logger.warning(f"Unexpected GPT-4 response format: {response_text[:100]}")
                 return []
 
-            logger.debug(f"GPT-4 detected {len(events)} events")
+            logger.debug(f"LLM detected {len(events)} events")
             return events
 
         except json.JSONDecodeError as e:

@@ -60,8 +60,8 @@ def test_competitor(db, test_user):
 
 @pytest.fixture
 def mock_openai():
-    """Mock OpenAI GPT-4"""
-    with patch('app.services.strategic_detection_service.ChatOpenAI') as mock:
+    """Mock LLMFactory.create to control the LLM instance used by the service."""
+    with patch('app.core.llm_factory.LLMFactory.create') as mock:
         yield mock
 
 
@@ -77,7 +77,6 @@ class TestStrategicDetectionService:
         service = StrategicDetectionService()
         assert service is not None
 
-    @patch('app.services.strategic_detection_service.ChatOpenAI')
     def test_detect_market_entry(self, mock_openai, db, test_competitor):
         """
         GIVEN: Content about market expansion
@@ -108,7 +107,6 @@ class TestStrategicDetectionService:
         assert events[0].event_category == "market_entry"
         assert events[0].confidence >= 0.8
 
-    @patch('app.services.strategic_detection_service.ChatOpenAI')
     def test_detect_acquisition(self, mock_openai, db, test_competitor):
         """
         GIVEN: Content about acquisition
@@ -137,7 +135,6 @@ class TestStrategicDetectionService:
         assert len(events) >= 1
         assert events[0].event_category == "acquisition"
 
-    @patch('app.services.strategic_detection_service.ChatOpenAI')
     def test_detect_partnership(self, mock_openai, db, test_competitor):
         """
         GIVEN: Content about strategic partnership
@@ -166,7 +163,6 @@ class TestStrategicDetectionService:
         assert len(events) >= 1
         assert events[0].event_category == "partnership"
 
-    @patch('app.services.strategic_detection_service.ChatOpenAI')
     def test_detect_product_launch(self, mock_openai, db, test_competitor):
         """
         GIVEN: Content about product launch
@@ -195,7 +191,6 @@ class TestStrategicDetectionService:
         assert len(events) >= 1
         assert events[0].event_category == "product_launch"
 
-    @patch('app.services.strategic_detection_service.ChatOpenAI')
     def test_detect_pricing_change(self, mock_openai, db, test_competitor):
         """
         GIVEN: Content about pricing change
@@ -224,7 +219,6 @@ class TestStrategicDetectionService:
         assert len(events) >= 1
         assert events[0].event_category == "pricing_change"
 
-    @patch('app.services.strategic_detection_service.ChatOpenAI')
     def test_detect_leadership_change(self, mock_openai, db, test_competitor):
         """
         GIVEN: Content about leadership hire
@@ -253,7 +247,6 @@ class TestStrategicDetectionService:
         assert len(events) >= 1
         assert events[0].event_category == "leadership_change"
 
-    @patch('app.services.strategic_detection_service.ChatOpenAI')
     def test_detect_funding(self, mock_openai, db, test_competitor):
         """
         GIVEN: Content about funding round
@@ -282,7 +275,6 @@ class TestStrategicDetectionService:
         assert len(events) >= 1
         assert events[0].event_category == "funding"
 
-    @patch('app.services.strategic_detection_service.ChatOpenAI')
     def test_multiple_events_detected(self, mock_openai, db, test_competitor):
         """
         GIVEN: Content with multiple strategic moves
@@ -310,7 +302,6 @@ class TestStrategicDetectionService:
 
         assert len(events) >= 2
 
-    @patch('app.services.strategic_detection_service.ChatOpenAI')
     def test_with_extracted_entities(self, mock_openai, db, test_competitor):
         """
         GIVEN: Pre-extracted entities
@@ -347,7 +338,6 @@ class TestStrategicDetectionService:
 
         assert len(events) >= 1
 
-    @patch('app.services.strategic_detection_service.ChatOpenAI')
     def test_no_strategic_moves(self, mock_openai, db, test_competitor):
         """
         GIVEN: Content with no strategic moves
@@ -372,7 +362,6 @@ class TestStrategicDetectionService:
 
         assert events == []
 
-    @patch('app.services.strategic_detection_service.ChatOpenAI')
     def test_error_handling(self, mock_openai, db, test_competitor):
         """
         GIVEN: LLM call fails

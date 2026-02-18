@@ -18,6 +18,7 @@ from app.models.raw_content import RawContent
 from app.models.processed_insights import ProcessedInsights
 from app.models.entity import Entity
 from app.models.strategic_event import StrategicEvent
+from app.schemas.ai_responses import SummaryResult, InsightsResult, SentimentResult
 from app.services.content_processing_service import ContentProcessingService
 
 
@@ -80,14 +81,28 @@ def test_raw_content(db, test_data_source):
     return content
 
 
+def _make_llm_mock():
+    """Return a mock LLM that returns valid structured outputs for all 3 pipeline calls."""
+    mock_runnable = Mock()
+    mock_runnable.invoke.side_effect = [
+        SummaryResult(summary="Funding announcement"),
+        InsightsResult(insights="$50M Series B"),
+        SentimentResult(sentiment="positive"),
+    ]
+    mock_llm = Mock()
+    mock_llm.with_structured_output.return_value = mock_runnable
+    return mock_llm
+
+
 class TestStrategicPipelineIntegration:
     """Test strategic intelligence pipeline integration"""
 
+    @patch('app.services.content_processing_service.QualityScoringService')
     @patch('app.services.content_processing_service.EntityExtractionService')
     @patch('app.services.content_processing_service.StrategicDetectionService')
-    @patch('app.services.content_processing_service.OpenAIClient')
+    @patch('app.core.llm_factory.LLMFactory.create')
     def test_process_content_extracts_entities(
-        self, mock_openai_cls, mock_strategic_cls, mock_entity_cls,
+        self, mock_llm_create, mock_strategic_cls, mock_entity_cls, mock_qs_cls,
         db, test_raw_content, test_competitor
     ):
         """
@@ -95,11 +110,9 @@ class TestStrategicPipelineIntegration:
         WHEN: Processing content through pipeline
         THEN: Entity extraction service is called
         """
-        mock_openai = Mock()
-        mock_openai.summarize_content.return_value = "Funding announcement"
-        mock_openai.extract_insights.return_value = "$50M Series B"
-        mock_openai.analyze_sentiment.return_value = "positive"
-        mock_openai_cls.return_value = mock_openai
+        mock_llm_create.return_value = _make_llm_mock()
+
+        mock_qs_cls.return_value.calculate_quality_score.return_value = 75.0
 
         mock_entity = Mock()
         mock_entity.extract_entities.return_value = []
@@ -114,11 +127,12 @@ class TestStrategicPipelineIntegration:
 
         mock_entity.extract_entities.assert_called_once()
 
+    @patch('app.services.content_processing_service.QualityScoringService')
     @patch('app.services.content_processing_service.EntityExtractionService')
     @patch('app.services.content_processing_service.StrategicDetectionService')
-    @patch('app.services.content_processing_service.OpenAIClient')
+    @patch('app.core.llm_factory.LLMFactory.create')
     def test_process_content_detects_strategic_moves(
-        self, mock_openai_cls, mock_strategic_cls, mock_entity_cls,
+        self, mock_llm_create, mock_strategic_cls, mock_entity_cls, mock_qs_cls,
         db, test_raw_content, test_competitor
     ):
         """
@@ -126,11 +140,9 @@ class TestStrategicPipelineIntegration:
         WHEN: Processing content through pipeline
         THEN: Strategic detection service is called
         """
-        mock_openai = Mock()
-        mock_openai.summarize_content.return_value = "Funding announcement"
-        mock_openai.extract_insights.return_value = "$50M Series B"
-        mock_openai.analyze_sentiment.return_value = "positive"
-        mock_openai_cls.return_value = mock_openai
+        mock_llm_create.return_value = _make_llm_mock()
+
+        mock_qs_cls.return_value.calculate_quality_score.return_value = 75.0
 
         mock_entity = Mock()
         mock_entity.extract_entities.return_value = []
@@ -145,11 +157,12 @@ class TestStrategicPipelineIntegration:
 
         mock_strategic.detect_strategic_moves.assert_called_once()
 
+    @patch('app.services.content_processing_service.QualityScoringService')
     @patch('app.services.content_processing_service.EntityExtractionService')
     @patch('app.services.content_processing_service.StrategicDetectionService')
-    @patch('app.services.content_processing_service.OpenAIClient')
+    @patch('app.core.llm_factory.LLMFactory.create')
     def test_entities_passed_to_strategic_detection(
-        self, mock_openai_cls, mock_strategic_cls, mock_entity_cls,
+        self, mock_llm_create, mock_strategic_cls, mock_entity_cls, mock_qs_cls,
         db, test_raw_content, test_competitor
     ):
         """
@@ -157,11 +170,9 @@ class TestStrategicPipelineIntegration:
         WHEN: Strategic detection runs
         THEN: Extracted entities are passed to strategic detection
         """
-        mock_openai = Mock()
-        mock_openai.summarize_content.return_value = "Test"
-        mock_openai.extract_insights.return_value = "Test"
-        mock_openai.analyze_sentiment.return_value = "neutral"
-        mock_openai_cls.return_value = mock_openai
+        mock_llm_create.return_value = _make_llm_mock()
+
+        mock_qs_cls.return_value.calculate_quality_score.return_value = 75.0
 
         microsoft = Entity(
             id=1,
@@ -186,11 +197,12 @@ class TestStrategicPipelineIntegration:
         call_kwargs = mock_strategic.detect_strategic_moves.call_args.kwargs
         assert len(call_kwargs.get('entities', [])) >= 1
 
+    @patch('app.services.content_processing_service.QualityScoringService')
     @patch('app.services.content_processing_service.EntityExtractionService')
     @patch('app.services.content_processing_service.StrategicDetectionService')
-    @patch('app.services.content_processing_service.OpenAIClient')
+    @patch('app.core.llm_factory.LLMFactory.create')
     def test_pipeline_handles_entity_errors_gracefully(
-        self, mock_openai_cls, mock_strategic_cls, mock_entity_cls,
+        self, mock_llm_create, mock_strategic_cls, mock_entity_cls, mock_qs_cls,
         db, test_raw_content
     ):
         """
@@ -198,11 +210,9 @@ class TestStrategicPipelineIntegration:
         WHEN: Processing content
         THEN: Pipeline continues - insight created, strategic detection still runs
         """
-        mock_openai = Mock()
-        mock_openai.summarize_content.return_value = "Test"
-        mock_openai.extract_insights.return_value = "Test"
-        mock_openai.analyze_sentiment.return_value = "neutral"
-        mock_openai_cls.return_value = mock_openai
+        mock_llm_create.return_value = _make_llm_mock()
+
+        mock_qs_cls.return_value.calculate_quality_score.return_value = 75.0
 
         mock_entity = Mock()
         mock_entity.extract_entities.side_effect = Exception("Entity extraction failed")
@@ -220,11 +230,12 @@ class TestStrategicPipelineIntegration:
         # Strategic detection still ran (with empty entities list)
         mock_strategic.detect_strategic_moves.assert_called_once()
 
+    @patch('app.services.content_processing_service.QualityScoringService')
     @patch('app.services.content_processing_service.EntityExtractionService')
     @patch('app.services.content_processing_service.StrategicDetectionService')
-    @patch('app.services.content_processing_service.OpenAIClient')
+    @patch('app.core.llm_factory.LLMFactory.create')
     def test_pipeline_handles_strategic_errors_gracefully(
-        self, mock_openai_cls, mock_strategic_cls, mock_entity_cls,
+        self, mock_llm_create, mock_strategic_cls, mock_entity_cls, mock_qs_cls,
         db, test_raw_content
     ):
         """
@@ -232,11 +243,9 @@ class TestStrategicPipelineIntegration:
         WHEN: Processing content
         THEN: Insight is still returned successfully
         """
-        mock_openai = Mock()
-        mock_openai.summarize_content.return_value = "Test"
-        mock_openai.extract_insights.return_value = "Test"
-        mock_openai.analyze_sentiment.return_value = "neutral"
-        mock_openai_cls.return_value = mock_openai
+        mock_llm_create.return_value = _make_llm_mock()
+
+        mock_qs_cls.return_value.calculate_quality_score.return_value = 75.0
 
         mock_entity = Mock()
         mock_entity.extract_entities.return_value = []
@@ -252,11 +261,12 @@ class TestStrategicPipelineIntegration:
         # Insight still returned despite strategic detection failure
         assert insight is not None
 
+    @patch('app.services.content_processing_service.QualityScoringService')
     @patch('app.services.content_processing_service.EntityExtractionService')
     @patch('app.services.content_processing_service.StrategicDetectionService')
-    @patch('app.services.content_processing_service.OpenAIClient')
+    @patch('app.core.llm_factory.LLMFactory.create')
     def test_strategic_detection_receives_competitor_id(
-        self, mock_openai_cls, mock_strategic_cls, mock_entity_cls,
+        self, mock_llm_create, mock_strategic_cls, mock_entity_cls, mock_qs_cls,
         db, test_raw_content, test_data_source
     ):
         """
@@ -264,11 +274,9 @@ class TestStrategicPipelineIntegration:
         WHEN: Pipeline runs
         THEN: Correct competitor_id is passed to both services
         """
-        mock_openai = Mock()
-        mock_openai.summarize_content.return_value = "Test"
-        mock_openai.extract_insights.return_value = "Test"
-        mock_openai.analyze_sentiment.return_value = "neutral"
-        mock_openai_cls.return_value = mock_openai
+        mock_llm_create.return_value = _make_llm_mock()
+
+        mock_qs_cls.return_value.calculate_quality_score.return_value = 75.0
 
         mock_entity = Mock()
         mock_entity.extract_entities.return_value = []

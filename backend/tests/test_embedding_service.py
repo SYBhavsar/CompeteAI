@@ -72,14 +72,13 @@ def test_processed_insights(db_session: Session):
 
 @pytest.fixture
 def mock_openai_client():
-    """Mock OpenAI client for embeddings"""
-    mock_client = Mock()
-    mock_client.client = Mock()
+    """Mock raw OpenAI client used for embeddings."""
     mock_embedding = Mock()
-    mock_embedding.embedding = [0.1] * 1536  # 1536-dimensional vector
+    mock_embedding.embedding = [0.1] * 1536
     mock_response = Mock()
     mock_response.data = [mock_embedding]
-    mock_client.client.embeddings.create.return_value = mock_response
+    mock_client = Mock()
+    mock_client.embeddings.create.return_value = mock_response
     return mock_client
 
 
@@ -93,11 +92,9 @@ def mock_pinecone_client():
 
 @pytest.fixture
 def embedding_service(mock_openai_client, mock_pinecone_client):
-    """Create embedding service with mocked clients"""
-    return EmbeddingService(
-        openai_client=mock_openai_client,
-        pinecone_client=mock_pinecone_client
-    )
+    """Create embedding service with mocked clients."""
+    with patch("app.services.embedding_service.OpenAI", return_value=mock_openai_client):
+        return EmbeddingService(pinecone_client=mock_pinecone_client)
 
 
 def test_generate_embedding_from_text(embedding_service):
@@ -113,17 +110,34 @@ def test_generate_embedding_from_text(embedding_service):
 
 def test_generate_embedding_error_handling(mock_pinecone_client):
     """Test embedding generation error handling"""
-    mock_openai = Mock()
-    mock_openai.embeddings.create.side_effect = Exception("API Error")
+    mock_client = Mock()
+    mock_client.embeddings.create.side_effect = Exception("API Error")
 
-    service = EmbeddingService(
-        openai_client=mock_openai,
-        pinecone_client=mock_pinecone_client
-    )
+    with patch("app.services.embedding_service.OpenAI", return_value=mock_client):
+        service = EmbeddingService(pinecone_client=mock_pinecone_client)
 
     embedding = service.generate_embedding("test text")
 
     assert embedding is None
+
+
+def test_init_has_no_openai_client_attribute(mock_openai_client, mock_pinecone_client):
+    """EmbeddingService no longer exposes openai_client — uses self._client directly."""
+    with patch("app.services.embedding_service.OpenAI", return_value=mock_openai_client):
+        service = EmbeddingService(pinecone_client=mock_pinecone_client)
+
+    assert hasattr(service, "_client")
+    assert not hasattr(service, "openai_client")
+
+
+def test_generate_embedding_calls_internal_client(mock_openai_client, mock_pinecone_client):
+    """generate_embedding uses self._client.embeddings.create, not openai_client."""
+    with patch("app.services.embedding_service.OpenAI", return_value=mock_openai_client):
+        service = EmbeddingService(pinecone_client=mock_pinecone_client)
+
+    service.generate_embedding("some text")
+
+    mock_openai_client.embeddings.create.assert_called_once()
 
 
 def test_store_insight_embedding(embedding_service, test_processed_insights, db_session):

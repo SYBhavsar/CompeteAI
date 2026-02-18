@@ -1,12 +1,10 @@
-import os
 from typing import Dict, Optional
-from langchain_openai import ChatOpenAI
-from langchain.prompts import PromptTemplate
-from langchain.chains import LLMChain
+from langchain_core.language_models.chat_models import BaseChatModel
 import logging
 from openai import OpenAIError
 
-from app.core.config import settings
+from app.core.llm_factory import LLMFactory
+from app.core.prompt_loader import PromptLoader
 from app.utils.retry import retry_with_backoff
 
 logger = logging.getLogger(__name__)
@@ -17,22 +15,15 @@ class LangChainService:
     """Service for advanced AI workflows using LangChain"""
 
     def __init__(self):
-        """Initialize LangChain service with OpenAI LLM"""
-        try:
-            api_key = settings.openai_api_key
-            if not api_key:
-                logger.error("OPENAI_API_KEY not found in environment variables.")
-                raise ValueError("OPENAI_API_KEY is required for LangChainService.")
+        """Initialize LangChain service with a per-service LLM cache."""
+        self._llm_cache: Dict[str, BaseChatModel] = {}
+        logger.info("LangChainService initialized.")
 
-            self.llm = ChatOpenAI(
-                model=settings.openai_model,
-                temperature=settings.openai_temperature,
-                openai_api_key=api_key
-            )
-            logger.info("LangChainService initialized successfully with gpt-3.5-turbo.")
-        except Exception as e:
-            logger.critical(f"Failed to initialize LangChainService: {e}", exc_info=True)
-            raise
+    def _get_llm(self, service_name: str) -> BaseChatModel:
+        """Return a cached LLM for the given service, creating it if needed."""
+        if service_name not in self._llm_cache:
+            self._llm_cache[service_name] = LLMFactory.create(service_name)
+        return self._llm_cache[service_name]
 
     def analyze_competitive_intelligence(self, content: str) -> Optional[str]:
         """
@@ -57,7 +48,7 @@ class LangChainService:
     def _analyze_with_retry(self, content: str) -> str:
         """Internal method with retry logic"""
         prompt = self._create_competitive_analysis_prompt(content)
-        response = self.llm.invoke(prompt)
+        response = self._get_llm("competitive_analysis").invoke(prompt)
         return response.content
 
     def generate_summary(self, content: str) -> Optional[str]:
@@ -72,19 +63,10 @@ class LangChainService:
         """
         logger.debug("Generating summary.")
         try:
-            template = """You are a competitive intelligence analyst.
-            Summarize the following content in 2-3 concise sentences, focusing on key business insights:
-
-            Content: {content}
-
-            Summary:"""
-
-            prompt = PromptTemplate(template=template, input_variables=["content"])
-            formatted_prompt = prompt.format(content=content)
-            
-            response = self.llm.invoke(formatted_prompt)
+            prompt_config = PromptLoader.load("summarization")
+            user_msg = prompt_config.user_prompt.format(content=content)
+            response = self._get_llm("summarization").invoke(user_msg)
             summary = response.content.strip()
-
             logger.info("Successfully generated summary.")
             return summary
         except Exception as e:
@@ -103,19 +85,10 @@ class LangChainService:
         """
         logger.debug("Extracting strategic insights.")
         try:
-            template = """As a competitive intelligence expert, analyze this content and extract strategic insights:
-            Focus on: market positioning, competitive advantages, strategic moves, and business implications.
-
-            Content: {content}
-
-            Strategic Insights:"""
-
-            prompt = PromptTemplate(template=template, input_variables=["content"])
-            formatted_prompt = prompt.format(content=content)
-
-            response = self.llm.invoke(formatted_prompt)
+            prompt_config = PromptLoader.load("insight_extraction")
+            user_msg = prompt_config.user_prompt.format(content=content)
+            response = self._get_llm("insight_extraction").invoke(user_msg)
             insights = response.content.strip()
-
             logger.info("Successfully extracted strategic insights.")
             return insights
         except Exception as e:
@@ -134,18 +107,13 @@ class LangChainService:
         """
         logger.debug("Analyzing sentiment with reasoning.")
         try:
-            template = """Analyze the sentiment of the following content.
-            Provide your response in the format: sentiment|reasoning
-            Where sentiment is one of: positive, negative, neutral
-
-            Content: {content}
-
-            Response:"""
-
-            prompt = PromptTemplate(template=template, input_variables=["content"])
-            formatted_prompt = prompt.format(content=content)
-
-            response = self.llm.invoke(formatted_prompt)
+            user_msg = (
+                f"Analyze the sentiment of the following content.\n"
+                f"Provide your response in the format: sentiment|reasoning\n"
+                f"Where sentiment is one of: positive, negative, neutral\n\n"
+                f"Content: {content}\n\nResponse:"
+            )
+            response = self._get_llm("sentiment_analysis").invoke(user_msg)
             result = response.content.strip()
 
             # Parse response
@@ -203,7 +171,7 @@ class LangChainService:
 
     def _create_competitive_analysis_prompt(self, content: str) -> str:
         """
-        Create formatted prompt for competitive intelligence analysis
+        Create formatted prompt for competitive intelligence analysis.
 
         Args:
             content: Content to analyze
@@ -211,17 +179,5 @@ class LangChainService:
         Returns:
             Formatted prompt string
         """
-        return f"""You are an expert competitive intelligence analyst.
-        Analyze the following content and provide strategic insights about the competitor's activities,
-        market positioning, and business implications.
-
-        Focus on:
-        - Strategic moves and intent
-        - Competitive advantages or weaknesses
-        - Market positioning changes
-        - Business impact and implications
-
-        Content to analyze:
-        {content}
-
-        Competitive Intelligence Analysis:"""
+        prompt_config = PromptLoader.load("competitive_analysis")
+        return prompt_config.user_prompt.format(content=content)

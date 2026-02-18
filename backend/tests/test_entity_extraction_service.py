@@ -58,6 +58,14 @@ def test_competitor(db, test_user):
 
 
 @pytest.fixture
+def mock_llm_factory():
+    """Mock LLMFactory.create to avoid real LLM initialization."""
+    with patch('app.core.llm_factory.LLMFactory.create') as mock:
+        mock.return_value = Mock()
+        yield mock
+
+
+@pytest.fixture
 def mock_langchain():
     """Mock LangChain extraction chain"""
     with patch('app.services.entity_extraction_service.create_extraction_chain') as mock:
@@ -67,7 +75,7 @@ def mock_langchain():
 class TestEntityExtractionService:
     """Test EntityExtractionService"""
 
-    def test_service_initialization(self, mock_langchain):
+    def test_service_initialization(self, mock_llm_factory, mock_langchain):
         """
         GIVEN: EntityExtractionService class
         WHEN: Initializing the service
@@ -76,8 +84,7 @@ class TestEntityExtractionService:
         service = EntityExtractionService()
         assert service is not None
 
-    @patch('app.services.entity_extraction_service.ChatOpenAI')
-    def test_extract_product_entities(self, mock_openai, db, test_competitor, mock_langchain):
+    def test_extract_product_entities(self, mock_llm_factory, db, test_competitor, mock_langchain):
         """
         GIVEN: Content mentioning products
         WHEN: Extracting entities
@@ -115,8 +122,7 @@ class TestEntityExtractionService:
         assert any(e.entity_type == "product" for e in entities)
         assert any("AI Analytics" in e.name for e in entities)
 
-    @patch('app.services.entity_extraction_service.ChatOpenAI')
-    def test_extract_person_entities(self, mock_openai, db, test_competitor, mock_langchain):
+    def test_extract_person_entities(self, mock_llm_factory, db, test_competitor, mock_langchain):
         """
         GIVEN: Content mentioning people
         WHEN: Extracting entities
@@ -150,8 +156,7 @@ class TestEntityExtractionService:
         assert len(person_entities) >= 1
         assert "Jane Smith" in person_entities[0].name
 
-    @patch('app.services.entity_extraction_service.ChatOpenAI')
-    def test_extract_company_entities(self, mock_openai, db, test_competitor, mock_langchain):
+    def test_extract_company_entities(self, mock_llm_factory, db, test_competitor, mock_langchain):
         """
         GIVEN: Content mentioning companies
         WHEN: Extracting entities
@@ -183,8 +188,7 @@ class TestEntityExtractionService:
         assert len(company_entities) >= 1
         assert "Microsoft" in company_entities[0].name
 
-    @patch('app.services.entity_extraction_service.ChatOpenAI')
-    def test_extract_technology_entities(self, mock_openai, db, test_competitor, mock_langchain):
+    def test_extract_technology_entities(self, mock_llm_factory, db, test_competitor, mock_langchain):
         """
         GIVEN: Content mentioning technologies
         WHEN: Extracting entities
@@ -220,8 +224,7 @@ class TestEntityExtractionService:
         tech_entities = [e for e in entities if e.entity_type == "technology"]
         assert len(tech_entities) >= 1
 
-    @patch('app.services.entity_extraction_service.ChatOpenAI')
-    def test_alias_resolution(self, mock_openai, db, test_competitor, mock_langchain):
+    def test_alias_resolution(self, mock_llm_factory, db, test_competitor, mock_langchain):
         """
         GIVEN: Content with multiple names for same entity
         WHEN: Extracting entities
@@ -254,8 +257,7 @@ class TestEntityExtractionService:
         # Check if entity has aliases property
         assert hasattr(entities[0], 'aliases')
 
-    @patch('app.services.entity_extraction_service.ChatOpenAI')
-    def test_deduplication(self, mock_openai, db, test_competitor, mock_langchain):
+    def test_deduplication(self, mock_llm_factory, db, test_competitor, mock_langchain):
         """
         GIVEN: Content mentioning same entity multiple times
         WHEN: Extracting entities
@@ -297,8 +299,7 @@ class TestEntityExtractionService:
         microsoft_entities = [e for e in entities if "Microsoft" in e.name]
         assert len(microsoft_entities) == 1
 
-    @patch('app.services.entity_extraction_service.ChatOpenAI')
-    def test_entity_metadata_extraction(self, mock_openai, db, test_competitor, mock_langchain):
+    def test_entity_metadata_extraction(self, mock_llm_factory, db, test_competitor, mock_langchain):
         """
         GIVEN: Content with entity details
         WHEN: Extracting entities
@@ -330,8 +331,7 @@ class TestEntityExtractionService:
         # Metadata should be stored
         assert hasattr(entities[0], 'entity_metadata')
 
-    @patch('app.services.entity_extraction_service.ChatOpenAI')
-    def test_mixed_entity_types(self, mock_openai, db, test_competitor, mock_langchain):
+    def test_mixed_entity_types(self, mock_llm_factory, db, test_competitor, mock_langchain):
         """
         GIVEN: Content with multiple entity types
         WHEN: Extracting entities
@@ -363,8 +363,7 @@ class TestEntityExtractionService:
         assert "company" in entity_types
         assert "product" in entity_types or "technology" in entity_types
 
-    @patch('app.services.entity_extraction_service.ChatOpenAI')
-    def test_empty_content(self, mock_openai, db, test_competitor, mock_langchain):
+    def test_empty_content(self, mock_llm_factory, db, test_competitor, mock_langchain):
         """
         GIVEN: Empty or minimal content
         WHEN: Extracting entities
@@ -383,8 +382,7 @@ class TestEntityExtractionService:
 
         assert entities == []
 
-    @patch('app.services.entity_extraction_service.ChatOpenAI')
-    def test_error_handling(self, mock_openai, db, test_competitor, mock_langchain):
+    def test_error_handling(self, mock_llm_factory, db, test_competitor, mock_langchain):
         """
         GIVEN: LangChain extraction fails
         WHEN: Extracting entities

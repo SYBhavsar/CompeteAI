@@ -12,10 +12,9 @@ from datetime import datetime
 from pydantic import BaseModel, Field
 from sqlalchemy.orm import Session
 
-from langchain_openai import ChatOpenAI
 from langchain.chains import create_extraction_chain
 
-from app.core.config import settings
+from app.core.llm_factory import LLMFactory
 from app.models.entity import Entity
 
 logger = logging.getLogger(__name__)
@@ -48,20 +47,9 @@ class EntityExtractionService:
     """
 
     def __init__(self):
-        """
-        Initialize with LangChain LLM.
-
-        Uses GPT-3.5 Turbo for cost optimization:
-        - Input: $0.0005/1K tokens
-        - Output: $0.0015/1K tokens
-        - ~20x cheaper than GPT-4
-        """
+        """Initialize with LangChain LLM via LLMFactory (provider/model configurable)."""
         try:
-            self.llm = ChatOpenAI(
-                model="gpt-3.5-turbo",
-                temperature=0.0,  # Deterministic for entity extraction
-                openai_api_key=settings.openai_api_key
-            )
+            self.llm = LLMFactory.create("entity_extraction")
             logger.info("EntityExtractionService initialized successfully")
         except Exception as e:
             logger.error(f"Failed to initialize EntityExtractionService: {e}", exc_info=True)

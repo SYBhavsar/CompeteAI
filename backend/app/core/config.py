@@ -8,7 +8,7 @@ class Settings(BaseSettings):
     redis_port: int = 6379
     secret_key: str = "your-secret-key-change-in-production"
 
-    # AI Model Configuration
+    # AI Model Configuration (global defaults)
     openai_api_key: str = ""  # Required in production
     openai_model: str = "gpt-3.5-turbo"
     openai_temperature: float = 0.3
@@ -22,6 +22,16 @@ class Settings(BaseSettings):
     # Pinecone Configuration
     pinecone_region: str = "us-east-1"
     pinecone_cloud: str = "aws"
+
+    # Additional AI provider API keys
+    anthropic_api_key: str = ""
+    google_api_key: str = ""
+    ollama_base_url: str = "http://localhost:11434"
+
+    # Per-service provider overrides (env vars read directly by AIConfig)
+    # Format: {SERVICE}_PROVIDER and {SERVICE}_MODEL
+    # e.g. ENTITY_EXTRACTION_PROVIDER=anthropic
+    #      ENTITY_EXTRACTION_MODEL=claude-3-haiku-20240307
 
     model_config = SettingsConfigDict(env_file=".env")
 
