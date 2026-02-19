@@ -21,3 +21,4 @@ class Competitor(Base):
     data_sources = relationship("DataSource", back_populates="competitor")
     strategic_events = relationship("StrategicEvent", back_populates="competitor")
     entities = relationship("Entity", back_populates="competitor")
+    predictions = relationship("CompetitorPrediction", back_populates="competitor")

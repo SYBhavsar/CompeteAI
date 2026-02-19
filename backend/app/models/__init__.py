@@ -12,6 +12,7 @@ from .timeline import CompetitorTimeline
 from .strategic_event import StrategicEvent
 from .entity import Entity
 from .entity_relationship import EntityRelationship
+from .prediction import CompetitorPrediction
 
 __all__ = [
     "User",
@@ -27,5 +28,6 @@ __all__ = [
     "CompetitorTimeline",
     "StrategicEvent",
     "Entity",
-    "EntityRelationship"
+    "EntityRelationship",
+    "CompetitorPrediction"
 ]
