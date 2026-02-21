@@ -1,0 +1,63 @@
+[tool.poetry]
+name = "recipemind-backend"
+version = "0.1.0"
+description = "AI-powered competitive intelligence platform"
+authors = []
+package-mode = false
+
+[tool.poetry.dependencies]
+python = "^3.12"
+
+# Web framework
+fastapi = "^0.118.3"
+uvicorn = "^0.37.0"
+python-dotenv = "^1.1.1"
+
+# Database
+sqlalchemy = "^2.0.44"
+psycopg2-binary = "^2.9.11"
+alembic = "^1.16.5"
+
+# Cache / Queue
+redis = "^6.4.0"
+aioredis = "^2.0.1"
+celery = "^5.5.3"
+
+# AI / LLM
+openai = "^2.3.0"
+langchain = "^0.3.27"
+langchain-openai = "^0.3.35"
+langchain-community = "^0.3.31"
+pinecone = "^7.3.0"
+
+# Data / Validation
+pydantic = {version = "^2.12.0", extras = ["email"]}
+pydantic-settings = "^2.11.0"
+pyyaml = "^6.0.3"
+
+# Auth
+pyjwt = "^2.10.1"
+
+# HTTP / Scraping
+httpx = "^0.28.1"
+requests = "^2.32.5"
+beautifulsoup4 = "^4.14.2"
+
+# Async / WebSocket
+websockets = "^15.0.1"
+anyio = "^4.11.0"
+
+[tool.poetry.group.dev.dependencies]
+pytest = "^8.4.2"
+pytest-asyncio = "^1.2.0"
+faker = "^37.12.0"
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+python_files = ["test_*.py"]
+python_classes = ["Test*"]
+python_functions = ["test_*"]
