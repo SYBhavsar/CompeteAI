@@ -22,3 +22,5 @@ class Competitor(Base):
     strategic_events = relationship("StrategicEvent", back_populates="competitor")
     entities = relationship("Entity", back_populates="competitor")
     predictions = relationship("CompetitorPrediction", back_populates="competitor")
+    swot_analyses = relationship("SWOTAnalysis", back_populates="competitor")
+    threat_assessments = relationship("ThreatAssessment", back_populates="competitor")

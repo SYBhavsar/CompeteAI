@@ -13,6 +13,8 @@ from .strategic_event import StrategicEvent
 from .entity import Entity
 from .entity_relationship import EntityRelationship
 from .prediction import CompetitorPrediction
+from .swot import SWOTAnalysis
+from .threat_assessment import ThreatAssessment
 
 __all__ = [
     "User",
@@ -29,5 +31,7 @@ __all__ = [
     "StrategicEvent",
     "Entity",
     "EntityRelationship",
-    "CompetitorPrediction"
+    "CompetitorPrediction",
+    "SWOTAnalysis",
+    "ThreatAssessment"
 ]

@@ -19,6 +19,7 @@ from app.api.websocket import router as websocket_router
 from app.api.historical_intelligence import router as historical_router
 from app.api.strategic_intelligence import router as strategic_router
 from app.api.predictive_analytics import router as predictive_router
+from app.api.swot import router as swot_router
 
 # Initialize logging
 setup_logging(log_level="INFO")
@@ -100,6 +101,7 @@ app.include_router(websocket_router, tags=["websocket"])
 app.include_router(historical_router, tags=["historical"])
 app.include_router(strategic_router, tags=["strategic"])
 app.include_router(predictive_router, tags=["predictive"])
+app.include_router(swot_router, tags=["swot"])
 
 @app.get("/")
 async def root():
