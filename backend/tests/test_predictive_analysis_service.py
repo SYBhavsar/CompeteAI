@@ -12,7 +12,7 @@ Following TDD - these tests will FAIL initially.
 """
 
 import pytest
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 from unittest.mock import Mock, patch
 
 from app.core.database import SessionLocal, Base, engine
@@ -98,7 +98,7 @@ class TestPredictiveAnalysisService:
                 title=f"Event {i}",
                 description=f"Description {i}",
                 confidence=0.90,
-                event_date=datetime.utcnow() - timedelta(days=30 - i),
+                event_date=datetime.now(timezone.utc) - timedelta(days=30 - i),
                 strategic_implications="Competitive threat",
                 entities_involved={},
                 source_insights={}
@@ -158,7 +158,7 @@ class TestPredictiveAnalysisService:
             title="Series A",
             description="Raised $10M",
             confidence=0.90,
-            event_date=datetime.utcnow() - timedelta(days=14),
+            event_date=datetime.now(timezone.utc) - timedelta(days=14),
             strategic_implications="Competitive threat",
             entities_involved={},
             source_insights={}
@@ -207,7 +207,7 @@ class TestPredictiveAnalysisService:
             title="Key Partnership",
             description="Strategic alliance formed",
             confidence=0.88,
-            event_date=datetime.utcnow() - timedelta(days=10),
+            event_date=datetime.now(timezone.utc) - timedelta(days=10),
             strategic_implications="Market expansion",
             entities_involved={},
             source_insights={}
@@ -252,7 +252,7 @@ class TestPredictiveAnalysisService:
             title="Series B",
             description="Raised $50M",
             confidence=0.95,
-            event_date=datetime.utcnow() - timedelta(days=7),
+            event_date=datetime.now(timezone.utc) - timedelta(days=7),
             strategic_implications="Well-funded competitor",
             entities_involved={},
             source_insights={}
@@ -286,7 +286,7 @@ class TestPredictiveAnalysisService:
             reasoning="Expected based on pattern",
             suggested_action="Monitor pricing",
             outcome="pending",
-            predicted_at=datetime.utcnow() - timedelta(days=25)
+            predicted_at=datetime.now(timezone.utc) - timedelta(days=25)
         )
         db.add(prediction)
         db.commit()
@@ -318,7 +318,7 @@ class TestPredictiveAnalysisService:
             reasoning="Active prediction",
             suggested_action="Watch releases",
             outcome="pending",
-            predicted_at=datetime.utcnow()
+            predicted_at=datetime.now(timezone.utc)
         )
         resolved = CompetitorPrediction(
             competitor_id=test_competitor.id,
@@ -328,8 +328,8 @@ class TestPredictiveAnalysisService:
             reasoning="Old prediction",
             suggested_action="N/A",
             outcome="correct",
-            predicted_at=datetime.utcnow() - timedelta(days=60),
-            resolved_at=datetime.utcnow() - timedelta(days=10)
+            predicted_at=datetime.now(timezone.utc) - timedelta(days=60),
+            resolved_at=datetime.now(timezone.utc) - timedelta(days=10)
         )
         db.add(pending)
         db.add(resolved)

@@ -8,7 +8,7 @@ Follows: Single Responsibility Principle - focused on entity extraction only
 
 import logging
 from typing import List, Dict, Any, Optional
-from datetime import datetime
+from datetime import datetime, timezone
 from pydantic import BaseModel, Field
 from sqlalchemy.orm import Session
 
@@ -191,7 +191,7 @@ class EntityExtractionService:
                     entity_type=data["entity_type"],
                     name=name,
                     aliases=aliases,
-                    first_mentioned=datetime.utcnow(),
+                    first_mentioned=datetime.now(timezone.utc),
                     competitor_id=competitor_id,
                     entity_metadata=entity_metadata
                 )

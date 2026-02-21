@@ -12,7 +12,7 @@ Following TDD - these tests will FAIL initially.
 """
 
 import pytest
-from datetime import datetime
+from datetime import datetime, timezone
 from fastapi.testclient import TestClient
 from unittest.mock import Mock, patch
 
@@ -70,7 +70,7 @@ def client():
 def seeded_swot(db, test_competitor):
     swot = SWOTAnalysis(
         competitor_id=test_competitor.id,
-        analysis_date=datetime.utcnow(),
+        analysis_date=datetime.now(timezone.utc),
         strengths=[{"description": "Strong brand", "evidence": "Top search rank", "impact_score": 0.85}],
         weaknesses=[{"description": "High pricing", "evidence": "Price survey", "impact_score": 0.70}],
         opportunities=[{"description": "SMB gap", "evidence": "Market data", "impact_score": 0.75}],
@@ -101,7 +101,7 @@ def seeded_threat(db, test_competitor):
             "Differentiate on service quality",
             "Lock in key accounts with multi-year contracts"
         ],
-        updated_at=datetime.utcnow()
+        updated_at=datetime.now(timezone.utc)
     )
     db.add(threat)
     db.commit()
@@ -218,7 +218,7 @@ class TestSWOTAPI:
                                    "resource_strength": 55, "partnerships": 50},
                 assessment_text="Moderate threat",
                 mitigation_recommendations=["Monitor closely"],
-                updated_at=datetime.utcnow()
+                updated_at=datetime.now(timezone.utc)
             )
             db.add(threat)
         db.commit()

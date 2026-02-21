@@ -12,7 +12,7 @@ Following TDD - these tests will FAIL initially.
 """
 
 import pytest
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 from fastapi.testclient import TestClient
 from unittest.mock import Mock, patch
 
@@ -77,7 +77,7 @@ def predictions(db, test_competitor):
             reasoning="Pattern suggests pricing update",
             suggested_action="Review our pricing",
             outcome="pending",
-            predicted_at=datetime.utcnow()
+            predicted_at=datetime.now(timezone.utc)
         ),
         CompetitorPrediction(
             competitor_id=test_competitor.id,
@@ -87,7 +87,7 @@ def predictions(db, test_competitor):
             reasoning="Hiring suggests new product",
             suggested_action="Accelerate roadmap",
             outcome="pending",
-            predicted_at=datetime.utcnow()
+            predicted_at=datetime.now(timezone.utc)
         ),
         CompetitorPrediction(
             competitor_id=test_competitor.id,
@@ -97,8 +97,8 @@ def predictions(db, test_competitor):
             reasoning="Geographic expansion signals",
             suggested_action="Strengthen partnerships",
             outcome="correct",
-            predicted_at=datetime.utcnow() - timedelta(days=60),
-            resolved_at=datetime.utcnow() - timedelta(days=5)
+            predicted_at=datetime.now(timezone.utc) - timedelta(days=60),
+            resolved_at=datetime.now(timezone.utc) - timedelta(days=5)
         ),
     ]
     for item in items:

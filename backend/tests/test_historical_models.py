@@ -7,7 +7,7 @@ Following TDD principles:
 """
 
 import pytest
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 from sqlalchemy.exc import IntegrityError
 from app.core.database import SessionLocal, Base, engine
 from app.models.user import User
@@ -67,7 +67,7 @@ class TestCompetitiveSnapshot:
         """
         snapshot = CompetitiveSnapshot(
             competitor_id=test_competitor.id,
-            snapshot_date=datetime.utcnow(),
+            snapshot_date=datetime.now(timezone.utc),
             data_hash="abc123def456",
             snapshot_data={
                 "pricing": "$99/month",
@@ -92,13 +92,13 @@ class TestCompetitiveSnapshot:
         """
         snapshot1 = CompetitiveSnapshot(
             competitor_id=test_competitor.id,
-            snapshot_date=datetime.utcnow(),
+            snapshot_date=datetime.now(timezone.utc),
             data_hash="identical_hash",
             snapshot_data={"data": "version1"}
         )
         snapshot2 = CompetitiveSnapshot(
             competitor_id=test_competitor.id,
-            snapshot_date=datetime.utcnow() + timedelta(days=1),
+            snapshot_date=datetime.now(timezone.utc) + timedelta(days=1),
             data_hash="identical_hash",
             snapshot_data={"data": "version1"}
         )
@@ -119,7 +119,7 @@ class TestCompetitiveSnapshot:
         with pytest.raises(IntegrityError):
             snapshot = CompetitiveSnapshot(
                 competitor_id=None,
-                snapshot_date=datetime.utcnow(),
+                snapshot_date=datetime.now(timezone.utc),
                 data_hash="test_hash",
                 snapshot_data={}
             )
@@ -139,13 +139,13 @@ class TestChangeEvent:
         # Create two snapshots
         snapshot_before = CompetitiveSnapshot(
             competitor_id=test_competitor.id,
-            snapshot_date=datetime.utcnow() - timedelta(days=7),
+            snapshot_date=datetime.now(timezone.utc) - timedelta(days=7),
             data_hash="hash_before",
             snapshot_data={"pricing": "$99/month"}
         )
         snapshot_after = CompetitiveSnapshot(
             competitor_id=test_competitor.id,
-            snapshot_date=datetime.utcnow(),
+            snapshot_date=datetime.now(timezone.utc),
             data_hash="hash_after",
             snapshot_data={"pricing": "$149/month"}
         )
@@ -182,13 +182,13 @@ class TestChangeEvent:
         # Create snapshots first
         snapshot_before = CompetitiveSnapshot(
             competitor_id=test_competitor.id,
-            snapshot_date=datetime.utcnow() - timedelta(days=1),
+            snapshot_date=datetime.now(timezone.utc) - timedelta(days=1),
             data_hash="before_hash",
             snapshot_data={"test": "data"}
         )
         snapshot_after = CompetitiveSnapshot(
             competitor_id=test_competitor.id,
-            snapshot_date=datetime.utcnow(),
+            snapshot_date=datetime.now(timezone.utc),
             data_hash="after_hash",
             snapshot_data={"test": "data"}
         )
@@ -225,13 +225,13 @@ class TestChangeEvent:
         # Create snapshots first
         snapshot_before = CompetitiveSnapshot(
             competitor_id=test_competitor.id,
-            snapshot_date=datetime.utcnow() - timedelta(days=1),
+            snapshot_date=datetime.now(timezone.utc) - timedelta(days=1),
             data_hash="before_hash",
             snapshot_data={"test": "data"}
         )
         snapshot_after = CompetitiveSnapshot(
             competitor_id=test_competitor.id,
-            snapshot_date=datetime.utcnow(),
+            snapshot_date=datetime.now(timezone.utc),
             data_hash="after_hash",
             snapshot_data={"test": "data"}
         )
@@ -344,7 +344,7 @@ class TestCompetitorTimeline:
             timeline_event = CompetitorTimeline(
                 competitor_id=test_competitor.id,
                 event_type=event_type,
-                event_date=datetime.utcnow(),
+                event_date=datetime.now(timezone.utc),
                 title=f"Test {event_type}",
                 description=f"Test event of type {event_type}",
                 source_urls=[]

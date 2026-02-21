@@ -10,7 +10,7 @@ Following TDD - these tests will FAIL initially.
 """
 
 import pytest
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 from unittest.mock import Mock, patch
 from sqlalchemy.orm import Session
 
@@ -61,13 +61,13 @@ def test_competitor_with_snapshots(db, test_user):
     # Create two snapshots
     snapshot1 = CompetitiveSnapshot(
         competitor_id=competitor.id,
-        snapshot_date=datetime.utcnow() - timedelta(days=7),
+        snapshot_date=datetime.now(timezone.utc) - timedelta(days=7),
         data_hash="hash1",
         snapshot_data={"pricing": "$99/month", "features": ["A", "B"]}
     )
     snapshot2 = CompetitiveSnapshot(
         competitor_id=competitor.id,
-        snapshot_date=datetime.utcnow() - timedelta(days=1),
+        snapshot_date=datetime.now(timezone.utc) - timedelta(days=1),
         data_hash="hash2",
         snapshot_data={"pricing": "$149/month", "features": ["A", "B", "C"]}
     )
@@ -338,8 +338,8 @@ class TestCreateSnapshotFromContentTask:
         result2 = create_snapshot_from_content(content2.id)
 
         # Verify same hash
-        snapshot1 = db.query(CompetitiveSnapshot).get(result1["snapshot_id"])
-        snapshot2 = db.query(CompetitiveSnapshot).get(result2["snapshot_id"])
+        snapshot1 = db.get(CompetitiveSnapshot, result1["snapshot_id"])
+        snapshot2 = db.get(CompetitiveSnapshot, result2["snapshot_id"])
 
         assert snapshot1.data_hash == snapshot2.data_hash
 

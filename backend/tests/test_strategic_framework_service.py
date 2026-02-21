@@ -12,7 +12,7 @@ Following TDD - these tests will FAIL initially.
 """
 
 import pytest
-from datetime import datetime
+from datetime import datetime, timezone
 from unittest.mock import Mock, patch
 
 from app.core.database import SessionLocal, Base, engine
@@ -292,7 +292,7 @@ class TestStrategicFrameworkService:
         # Seed an existing SWOT
         existing = SWOTAnalysis(
             competitor_id=test_competitor.id,
-            analysis_date=datetime.utcnow(),
+            analysis_date=datetime.now(timezone.utc),
             strengths=[{"description": "Old strength", "evidence": "Old evidence", "impact_score": 0.5}],
             weaknesses=[],
             opportunities=[],

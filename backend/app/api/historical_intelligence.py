@@ -17,7 +17,7 @@ from fastapi import APIRouter, Depends, HTTPException, Query, status
 from sqlalchemy.orm import Session
 from sqlalchemy import func, desc, case
 from typing import List, Optional
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 
 from app.core.database import SessionLocal
 from app.models import User, Competitor
@@ -134,7 +134,7 @@ def get_competitor_changes(
 
     # Apply filters
     if days:
-        cutoff_date = datetime.utcnow() - timedelta(days=days)
+        cutoff_date = datetime.now(timezone.utc) - timedelta(days=days)
         query = query.filter(ChangeEvent.created_at >= cutoff_date)
 
     if severity:
@@ -190,7 +190,7 @@ def create_competitor_snapshot(
         # Create snapshot
         snapshot = CompetitiveSnapshot(
             competitor_id=competitor_id,
-            snapshot_date=datetime.utcnow(),
+            snapshot_date=datetime.now(timezone.utc),
             data_hash=data_hash,
             snapshot_data=request.snapshot_data
         )
@@ -251,7 +251,7 @@ def get_change_velocity(
     """
     logger.info(f"Fetching change velocity analytics for user {current_user.id}, days={days}")
 
-    cutoff_date = datetime.utcnow() - timedelta(days=days)
+    cutoff_date = datetime.now(timezone.utc) - timedelta(days=days)
 
     # Query change counts and average severity by competitor
     results = db.query(

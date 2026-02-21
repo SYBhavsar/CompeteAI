@@ -1,3 +1,4 @@
+from contextlib import asynccontextmanager
 from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
 import logging
@@ -25,22 +26,22 @@ from app.api.swot import router as swot_router
 setup_logging(log_level="INFO")
 logger = logging.getLogger(__name__)
 
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    """Create database tables on startup"""
+    from app import models  # noqa: F401 — registers all models with SQLAlchemy
+    logger.info("Creating database tables...")
+    Base.metadata.create_all(bind=engine)
+    logger.info("Database tables ready")
+    yield
+
+
 app = FastAPI(
     title="AI Competitive Intelligence Platform",
     description="Automated competitive intelligence with AI-powered insights",
-    version="1.0.0"
+    version="1.0.0",
+    lifespan=lifespan,
 )
-
-
-@app.on_event("startup")
-async def startup_event():
-    """Create database tables on startup"""
-    # Import all models to ensure they're registered with SQLAlchemy
-    from app import models
-
-    logger.info("Creating database tables...")
-    Base.metadata.create_all(bind=engine)
-    logger.info("✅ Database tables ready")
 
 
 # Request logging middleware

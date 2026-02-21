@@ -5,6 +5,7 @@ Endpoints for AI-powered predictions of future competitor moves.
 """
 
 import logging
+from datetime import datetime, timezone
 from typing import List, Optional
 
 from fastapi import APIRouter, Depends, HTTPException, Query
@@ -90,9 +91,9 @@ def validate_outcome(
     if body.outcome not in ("correct", "incorrect"):
         raise HTTPException(status_code=400, detail="outcome must be 'correct' or 'incorrect'")
 
-    from datetime import datetime
+
     prediction.outcome = body.outcome
-    prediction.resolved_at = datetime.utcnow()
+    prediction.resolved_at = datetime.now(timezone.utc)
     db.commit()
     db.refresh(prediction)
     return prediction

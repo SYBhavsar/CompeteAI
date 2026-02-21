@@ -11,7 +11,7 @@ Follows: Single Responsibility Principle - focused on prediction only
 
 import json
 import logging
-from datetime import datetime
+from datetime import datetime, timezone
 from typing import List, Optional
 
 from sqlalchemy.orm import Session
@@ -150,7 +150,7 @@ class PredictiveAnalysisService:
             return None
 
         prediction.outcome = outcome
-        prediction.resolved_at = datetime.utcnow()
+        prediction.resolved_at = datetime.now(timezone.utc)
         db.commit()
         db.refresh(prediction)
         logger.info(f"Prediction {prediction_id} marked as {outcome}")
@@ -226,7 +226,7 @@ class PredictiveAnalysisService:
                     reasoning=item.get("reasoning", ""),
                     suggested_action=item.get("suggested_action", ""),
                     outcome="pending",
-                    predicted_at=datetime.utcnow()
+                    predicted_at=datetime.now(timezone.utc)
                 )
                 db.add(prediction)
                 saved.append(prediction)

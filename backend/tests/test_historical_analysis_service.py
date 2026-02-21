@@ -8,7 +8,7 @@ Following TDD - these tests will FAIL initially.
 """
 
 import pytest
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 from unittest.mock import Mock, patch
 from sqlalchemy.orm import Session
 
@@ -86,7 +86,7 @@ class TestHistoricalAnalysisService:
         # Create snapshots
         snapshot_before = CompetitiveSnapshot(
             competitor_id=test_competitor.id,
-            snapshot_date=datetime.utcnow() - timedelta(days=7),
+            snapshot_date=datetime.now(timezone.utc) - timedelta(days=7),
             data_hash="hash_before",
             snapshot_data={
                 "pricing": "$99/month",
@@ -95,7 +95,7 @@ class TestHistoricalAnalysisService:
         )
         snapshot_after = CompetitiveSnapshot(
             competitor_id=test_competitor.id,
-            snapshot_date=datetime.utcnow(),
+            snapshot_date=datetime.now(timezone.utc),
             data_hash="hash_after",
             snapshot_data={
                 "pricing": "$149/month",
@@ -143,7 +143,7 @@ class TestHistoricalAnalysisService:
         """
         snapshot_before = CompetitiveSnapshot(
             competitor_id=test_competitor.id,
-            snapshot_date=datetime.utcnow() - timedelta(days=30),
+            snapshot_date=datetime.now(timezone.utc) - timedelta(days=30),
             data_hash="hash1",
             snapshot_data={
                 "target_market": "Small Business",
@@ -152,7 +152,7 @@ class TestHistoricalAnalysisService:
         )
         snapshot_after = CompetitiveSnapshot(
             competitor_id=test_competitor.id,
-            snapshot_date=datetime.utcnow(),
+            snapshot_date=datetime.now(timezone.utc),
             data_hash="hash2",
             snapshot_data={
                 "target_market": "Enterprise",
@@ -199,13 +199,13 @@ class TestHistoricalAnalysisService:
 
         snapshot1 = CompetitiveSnapshot(
             competitor_id=test_competitor.id,
-            snapshot_date=datetime.utcnow() - timedelta(days=1),
+            snapshot_date=datetime.now(timezone.utc) - timedelta(days=1),
             data_hash="same_hash",
             snapshot_data=identical_data
         )
         snapshot2 = CompetitiveSnapshot(
             competitor_id=test_competitor.id,
-            snapshot_date=datetime.utcnow(),
+            snapshot_date=datetime.now(timezone.utc),
             data_hash="same_hash",
             snapshot_data=identical_data
         )
@@ -245,7 +245,7 @@ class TestHistoricalAnalysisService:
         for i in range(3):
             snapshot = CompetitiveSnapshot(
                 competitor_id=test_competitor.id,
-                snapshot_date=datetime.utcnow() - timedelta(days=3-i),
+                snapshot_date=datetime.now(timezone.utc) - timedelta(days=3-i),
                 data_hash=f"hash_{i}",
                 snapshot_data={"version": i}
             )
@@ -281,13 +281,13 @@ class TestHistoricalAnalysisService:
         """
         snapshot_before = CompetitiveSnapshot(
             competitor_id=test_competitor.id,
-            snapshot_date=datetime.utcnow() - timedelta(days=1),
+            snapshot_date=datetime.now(timezone.utc) - timedelta(days=1),
             data_hash="before",
             snapshot_data={"price": "$100"}
         )
         snapshot_after = CompetitiveSnapshot(
             competitor_id=test_competitor.id,
-            snapshot_date=datetime.utcnow(),
+            snapshot_date=datetime.now(timezone.utc),
             data_hash="after",
             snapshot_data={"price": "$50"}
         )
@@ -324,13 +324,13 @@ class TestHistoricalAnalysisService:
         """
         snapshot_before = CompetitiveSnapshot(
             competitor_id=test_competitor.id,
-            snapshot_date=datetime.utcnow() - timedelta(days=1),
+            snapshot_date=datetime.now(timezone.utc) - timedelta(days=1),
             data_hash="b",
             snapshot_data={"test": "data"}
         )
         snapshot_after = CompetitiveSnapshot(
             competitor_id=test_competitor.id,
-            snapshot_date=datetime.utcnow(),
+            snapshot_date=datetime.now(timezone.utc),
             data_hash="a",
             snapshot_data={"test": "data2"}
         )
@@ -366,7 +366,7 @@ class TestHistoricalAnalysisService:
         """
         snapshot_before = CompetitiveSnapshot(
             competitor_id=test_competitor.id,
-            snapshot_date=datetime.utcnow() - timedelta(days=7),
+            snapshot_date=datetime.now(timezone.utc) - timedelta(days=7),
             data_hash="before",
             snapshot_data={
                 "pricing": "$99/month",
@@ -376,7 +376,7 @@ class TestHistoricalAnalysisService:
         )
         snapshot_after = CompetitiveSnapshot(
             competitor_id=test_competitor.id,
-            snapshot_date=datetime.utcnow(),
+            snapshot_date=datetime.now(timezone.utc),
             data_hash="after",
             snapshot_data={
                 "pricing": "$149/month",

@@ -188,10 +188,10 @@ def create_snapshot_from_content(self, raw_content_id: int) -> Dict[str, Any]:
             }
 
         # Create snapshot
-        from datetime import datetime
+        from datetime import datetime, timezone
         snapshot = CompetitiveSnapshot(
             competitor_id=competitor_id,
-            snapshot_date=datetime.utcnow(),
+            snapshot_date=datetime.now(timezone.utc),
             data_hash=data_hash,
             snapshot_data=snapshot_data
         )
@@ -247,9 +247,9 @@ def cleanup_old_snapshots(self, days_to_keep: int = 90) -> Dict[str, Any]:
 
     db = SessionLocal()
     try:
-        from datetime import datetime, timedelta
+        from datetime import datetime, timedelta, timezone
 
-        cutoff_date = datetime.utcnow() - timedelta(days=days_to_keep)
+        cutoff_date = datetime.now(timezone.utc) - timedelta(days=days_to_keep)
 
         # Get snapshots older than cutoff, keeping at least 2 per competitor
         from sqlalchemy import func

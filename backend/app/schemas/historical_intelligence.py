@@ -4,13 +4,15 @@ Pydantic schemas for Historical Intelligence API
 Request/Response models for historical analysis endpoints.
 """
 
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, ConfigDict, Field
 from typing import List, Dict, Any, Optional
 from datetime import datetime
 
 
 class TimelineEventResponse(BaseModel):
     """Response model for timeline events"""
+    model_config = ConfigDict(from_attributes=True)
+
     id: int
     competitor_id: int
     event_type: str
@@ -20,12 +22,11 @@ class TimelineEventResponse(BaseModel):
     source_urls: List[str]
     created_at: datetime
 
-    class Config:
-        from_attributes = True
-
 
 class ChangeEventResponse(BaseModel):
     """Response model for change events"""
+    model_config = ConfigDict(from_attributes=True)
+
     id: int
     competitor_id: int
     change_type: str
@@ -37,25 +38,26 @@ class ChangeEventResponse(BaseModel):
     confidence_score: float
     created_at: datetime
 
-    class Config:
-        from_attributes = True
-
 
 class SnapshotCreateRequest(BaseModel):
     """Request model for creating snapshots"""
     snapshot_data: Dict[str, Any] = Field(
         ...,
         description="Competitor data to snapshot (pricing, features, etc.)",
-        example={
-            "pricing": "$199/month",
-            "features": ["Feature A", "Feature B"],
-            "target_market": "Enterprise"
+        json_schema_extra={
+            "example": {
+                "pricing": "$199/month",
+                "features": ["Feature A", "Feature B"],
+                "target_market": "Enterprise"
+            }
         }
     )
 
 
 class SnapshotResponse(BaseModel):
     """Response model for snapshots"""
+    model_config = ConfigDict(from_attributes=True)
+
     id: int
     competitor_id: int
     snapshot_date: datetime
@@ -63,18 +65,14 @@ class SnapshotResponse(BaseModel):
     snapshot_data: Dict[str, Any]
     created_at: datetime
 
-    class Config:
-        from_attributes = True
-
 
 class ChangeVelocityResponse(BaseModel):
     """Response model for change velocity analytics"""
+    model_config = ConfigDict(from_attributes=True)
+
     competitor_id: int
     competitor_name: str
     competitor_domain: Optional[str] = None
     change_count: int = Field(..., description="Number of changes in timeframe")
     average_severity: str = Field(..., description="Average severity: minor, moderate, major, critical")
     timeframe_days: int = Field(..., description="Analysis timeframe in days")
-
-    class Config:
-        from_attributes = True

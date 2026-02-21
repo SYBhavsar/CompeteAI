@@ -10,7 +10,7 @@ Following TDD - these tests will FAIL initially.
 """
 
 import pytest
-from datetime import datetime
+from datetime import datetime, timezone
 from unittest.mock import Mock, patch
 from sqlalchemy.orm import Session
 
@@ -313,7 +313,7 @@ class TestStrategicDetectionService:
             entity_type="company",
             name="Microsoft",
             aliases=[],
-            first_mentioned=datetime.utcnow(),
+            first_mentioned=datetime.now(timezone.utc),
             competitor_id=test_competitor.id,
             entity_metadata={}
         )

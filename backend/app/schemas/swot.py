@@ -1,11 +1,13 @@
 """Pydantic schemas for SWOT & Threat Assessment API."""
 
-from pydantic import BaseModel
+from pydantic import BaseModel, ConfigDict
 from typing import List, Dict, Any, Optional
 from datetime import datetime
 
 
 class SWOTAnalysisResponse(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+
     id: int
     competitor_id: int
     analysis_date: datetime
@@ -16,11 +18,10 @@ class SWOTAnalysisResponse(BaseModel):
     overall_assessment: str
     confidence_score: float
 
-    class Config:
-        from_attributes = True
-
 
 class ThreatAssessmentResponse(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+
     id: int
     competitor_id: int
     threat_score: float
@@ -29,15 +30,11 @@ class ThreatAssessmentResponse(BaseModel):
     mitigation_recommendations: List[str]
     updated_at: datetime
 
-    class Config:
-        from_attributes = True
-
 
 class ThreatLandscapeItem(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+
     competitor_id: int
     competitor_name: str
     threat_score: float
     threat_categories: Dict[str, Any]
-
-    class Config:
-        from_attributes = True

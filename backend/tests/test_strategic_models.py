@@ -10,7 +10,7 @@ Following TDD - these tests will FAIL initially.
 """
 
 import pytest
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
 
@@ -164,7 +164,7 @@ class TestStrategicEvent:
                 competitor_id=test_competitor.id,
                 event_category=category,
                 confidence=0.85,
-                event_date=datetime.utcnow(),
+                event_date=datetime.now(timezone.utc),
                 title=f"Test {category}",
                 description=f"Test event for {category}",
                 entities_involved={},
@@ -188,7 +188,7 @@ class TestStrategicEvent:
             competitor_id=test_competitor.id,
             event_category="product_launch",
             confidence=0.87,
-            event_date=datetime.utcnow(),
+            event_date=datetime.now(timezone.utc),
             title="New Product Launch",
             description="Launched AI Analytics Suite",
             entities_involved={"product": "AI Analytics Suite"},
@@ -211,7 +211,7 @@ class TestStrategicEvent:
                 competitor_id=None,
                 event_category="product_launch",
                 confidence=0.9,
-                event_date=datetime.utcnow(),
+                event_date=datetime.now(timezone.utc),
                 title="Test",
                 description="Test",
                 entities_involved={},
@@ -336,7 +336,7 @@ class TestEntity:
                 entity_type=entity_type,
                 name=f"Test {entity_type}",
                 aliases=[],
-                first_mentioned=datetime.utcnow(),
+                first_mentioned=datetime.now(timezone.utc),
                 competitor_id=test_competitor.id,
                 entity_metadata={}
             )
@@ -357,7 +357,7 @@ class TestEntity:
             entity_type="product",
             name="Enterprise Analytics Platform",
             aliases=["EAP", "Analytics Platform", "EA Platform"],
-            first_mentioned=datetime.utcnow(),
+            first_mentioned=datetime.now(timezone.utc),
             competitor_id=test_competitor.id,
             entity_metadata={}
         )
@@ -383,7 +383,7 @@ class TestEntityRelationship:
             entity_type="company",
             name="Company A",
             aliases=[],
-            first_mentioned=datetime.utcnow(),
+            first_mentioned=datetime.now(timezone.utc),
             competitor_id=test_competitor.id,
             entity_metadata={}
         )
@@ -391,7 +391,7 @@ class TestEntityRelationship:
             entity_type="company",
             name="Company B",
             aliases=[],
-            first_mentioned=datetime.utcnow(),
+            first_mentioned=datetime.now(timezone.utc),
             competitor_id=test_competitor.id,
             entity_metadata={}
         )
@@ -423,7 +423,7 @@ class TestEntityRelationship:
             entity_type="company",
             name="Competitor Inc",
             aliases=[],
-            first_mentioned=datetime.utcnow(),
+            first_mentioned=datetime.now(timezone.utc),
             competitor_id=test_competitor.id,
             entity_metadata={}
         )
@@ -431,7 +431,7 @@ class TestEntityRelationship:
             entity_type="company",
             name="Microsoft",
             aliases=[],
-            first_mentioned=datetime.utcnow(),
+            first_mentioned=datetime.now(timezone.utc),
             competitor_id=test_competitor.id,
             entity_metadata={}
         )
@@ -462,7 +462,7 @@ class TestEntityRelationship:
                 entity_type="company",
                 name=f"Company {i}",
                 aliases=[],
-                first_mentioned=datetime.utcnow(),
+                first_mentioned=datetime.now(timezone.utc),
                 competitor_id=test_competitor.id,
                 entity_metadata={}
             )
@@ -502,7 +502,7 @@ class TestEntityRelationship:
             entity_type="company",
             name="Company A",
             aliases=[],
-            first_mentioned=datetime.utcnow(),
+            first_mentioned=datetime.now(timezone.utc),
             competitor_id=test_competitor.id,
             entity_metadata={}
         )
@@ -510,7 +510,7 @@ class TestEntityRelationship:
             entity_type="company",
             name="Company B",
             aliases=[],
-            first_mentioned=datetime.utcnow(),
+            first_mentioned=datetime.now(timezone.utc),
             competitor_id=test_competitor.id,
             entity_metadata={}
         )

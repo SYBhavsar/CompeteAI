@@ -10,7 +10,7 @@ Follows: Single Responsibility Principle
 
 import json
 import logging
-from datetime import datetime
+from datetime import datetime, timezone
 from typing import Optional
 
 from sqlalchemy.orm import Session
@@ -203,7 +203,7 @@ class StrategicFrameworkService:
 
         swot = SWOTAnalysis(
             competitor_id=competitor_id,
-            analysis_date=datetime.utcnow(),
+            analysis_date=datetime.now(timezone.utc),
             strengths=data.get("strengths", []),
             weaknesses=data.get("weaknesses", []),
             opportunities=data.get("opportunities", []),
@@ -244,7 +244,7 @@ class StrategicFrameworkService:
             threat_categories=cats,
             assessment_text=self._build_assessment_text(threat_score, cats),
             mitigation_recommendations=self._build_mitigations(cats),
-            updated_at=datetime.utcnow(),
+            updated_at=datetime.now(timezone.utc),
         )
         db.add(assessment)
         db.commit()

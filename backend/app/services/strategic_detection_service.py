@@ -10,7 +10,7 @@ Follows: Single Responsibility Principle - focused on strategic event detection 
 import logging
 import json
 from typing import List, Dict, Any, Optional
-from datetime import datetime
+from datetime import datetime, timezone
 from pydantic import BaseModel, Field
 from sqlalchemy.orm import Session
 
@@ -256,7 +256,7 @@ class StrategicDetectionService:
                     competitor_id=competitor_id,
                     event_category=event_category,
                     confidence=confidence,
-                    event_date=datetime.utcnow(),  # Detection time
+                    event_date=datetime.now(timezone.utc),  # Detection time
                     title=title,
                     description=description,
                     entities_involved={"entities": entities_list},

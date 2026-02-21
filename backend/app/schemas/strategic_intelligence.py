@@ -4,14 +4,14 @@ Strategic Intelligence Schemas
 Pydantic models for strategic events, entities, and relationships API.
 """
 
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, ConfigDict
 from typing import List, Dict, Any, Optional
 from datetime import datetime
 
 
-# Strategic Event Schemas
 class StrategicEventResponse(BaseModel):
-    """Response model for strategic event"""
+    model_config = ConfigDict(from_attributes=True)
+
     id: int
     competitor_id: int
     event_category: str
@@ -24,13 +24,10 @@ class StrategicEventResponse(BaseModel):
     source_insights: Dict[str, Any]
     created_at: datetime
 
-    class Config:
-        from_attributes = True
 
-
-# Entity Schemas
 class EntityResponse(BaseModel):
-    """Response model for entity"""
+    model_config = ConfigDict(from_attributes=True)
+
     id: int
     entity_type: str
     name: str
@@ -40,13 +37,10 @@ class EntityResponse(BaseModel):
     entity_metadata: Dict[str, Any]
     created_at: datetime
 
-    class Config:
-        from_attributes = True
 
-
-# Entity Relationship Schemas
 class EntityRelationshipResponse(BaseModel):
-    """Response model for entity relationship"""
+    model_config = ConfigDict(from_attributes=True)
+
     id: int
     source_entity_id: int
     target_entity_id: int
@@ -54,20 +48,14 @@ class EntityRelationshipResponse(BaseModel):
     confidence: float
     created_at: datetime
 
-    class Config:
-        from_attributes = True
 
-
-# Knowledge Graph Schemas
 class KnowledgeGraphNode(BaseModel):
-    """Node in knowledge graph"""
     id: int
     entity_type: str
     name: str
 
 
 class KnowledgeGraphEdge(BaseModel):
-    """Edge in knowledge graph"""
     source: int
     target: int
     relationship_type: str
@@ -75,14 +63,11 @@ class KnowledgeGraphEdge(BaseModel):
 
 
 class KnowledgeGraphResponse(BaseModel):
-    """Response model for knowledge graph"""
     nodes: List[KnowledgeGraphNode]
     edges: List[KnowledgeGraphEdge]
 
 
-# Analytics Schemas
 class EventSummaryResponse(BaseModel):
-    """Event counts by category"""
     market_entry: int = 0
     acquisition: int = 0
     partnership: int = 0
@@ -93,7 +78,6 @@ class EventSummaryResponse(BaseModel):
 
 
 class EntitySummaryResponse(BaseModel):
-    """Entity counts by type"""
     product: int = 0
     person: int = 0
     company: int = 0
@@ -102,12 +86,10 @@ class EntitySummaryResponse(BaseModel):
 
 
 class TimelineEventResponse(BaseModel):
-    """Simplified event for timeline"""
+    model_config = ConfigDict(from_attributes=True)
+
     id: int
     event_category: str
     event_date: datetime
     title: str
     confidence: float
-
-    class Config:
-        from_attributes = True

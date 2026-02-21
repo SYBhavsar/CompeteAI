@@ -11,7 +11,7 @@ Following TDD - these tests will FAIL initially.
 """
 
 import pytest
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 from fastapi.testclient import TestClient
 from unittest.mock import Mock, patch
 
@@ -88,7 +88,7 @@ class TestStrategicEventsAPI:
             competitor_id=test_competitor.id,
             event_category="market_entry",
             confidence=0.92,
-            event_date=datetime.utcnow() - timedelta(days=5),
+            event_date=datetime.now(timezone.utc) - timedelta(days=5),
             title="European Market Expansion",
             description="Expanding to Germany, France, UK",
             entities_involved={"countries": ["Germany", "France", "UK"]},
@@ -99,7 +99,7 @@ class TestStrategicEventsAPI:
             competitor_id=test_competitor.id,
             event_category="acquisition",
             confidence=0.95,
-            event_date=datetime.utcnow() - timedelta(days=2),
+            event_date=datetime.now(timezone.utc) - timedelta(days=2),
             title="Acquired TechCo",
             description="$50M acquisition for AI capabilities",
             entities_involved={"acquired_company": "TechCo", "amount": "$50M"},
@@ -132,7 +132,7 @@ class TestStrategicEventsAPI:
             competitor_id=test_competitor.id,
             event_category="acquisition",
             confidence=0.95,
-            event_date=datetime.utcnow(),
+            event_date=datetime.now(timezone.utc),
             title="Acquired Company A",
             description="Test",
             entities_involved={},
@@ -143,7 +143,7 @@ class TestStrategicEventsAPI:
             competitor_id=test_competitor.id,
             event_category="partnership",
             confidence=0.90,
-            event_date=datetime.utcnow(),
+            event_date=datetime.now(timezone.utc),
             title="Microsoft Partnership",
             description="Test",
             entities_involved={},
@@ -174,7 +174,7 @@ class TestStrategicEventsAPI:
             competitor_id=test_competitor.id,
             event_category="product_launch",
             confidence=0.90,
-            event_date=datetime.utcnow() - timedelta(days=3),
+            event_date=datetime.now(timezone.utc) - timedelta(days=3),
             title="New Product",
             description="Recent launch",
             entities_involved={},
@@ -185,7 +185,7 @@ class TestStrategicEventsAPI:
             competitor_id=test_competitor.id,
             event_category="funding",
             confidence=0.92,
-            event_date=datetime.utcnow() - timedelta(days=30),
+            event_date=datetime.now(timezone.utc) - timedelta(days=30),
             title="Old Funding",
             description="Old news",
             entities_involved={},
@@ -229,7 +229,7 @@ class TestEntitiesAPI:
             entity_type="product",
             name="AI Analytics Suite",
             aliases=["AI Suite"],
-            first_mentioned=datetime.utcnow(),
+            first_mentioned=datetime.now(timezone.utc),
             competitor_id=test_competitor.id,
             entity_metadata={"pricing": "$299/month"}
         )
@@ -237,7 +237,7 @@ class TestEntitiesAPI:
             entity_type="person",
             name="Jane Smith",
             aliases=["J. Smith"],
-            first_mentioned=datetime.utcnow(),
+            first_mentioned=datetime.now(timezone.utc),
             competitor_id=test_competitor.id,
             entity_metadata={"role": "CTO"}
         )
@@ -267,7 +267,7 @@ class TestEntitiesAPI:
             entity_type="company",
             name="Microsoft",
             aliases=["MSFT"],
-            first_mentioned=datetime.utcnow(),
+            first_mentioned=datetime.now(timezone.utc),
             competitor_id=test_competitor.id,
             entity_metadata={}
         )
@@ -275,7 +275,7 @@ class TestEntitiesAPI:
             entity_type="product",
             name="Product X",
             aliases=[],
-            first_mentioned=datetime.utcnow(),
+            first_mentioned=datetime.now(timezone.utc),
             competitor_id=test_competitor.id,
             entity_metadata={}
         )
@@ -301,7 +301,7 @@ class TestEntitiesAPI:
             entity_type="product",
             name="Enterprise Platform",
             aliases=["EP", "Platform"],
-            first_mentioned=datetime.utcnow(),
+            first_mentioned=datetime.now(timezone.utc),
             competitor_id=test_competitor.id,
             entity_metadata={"pricing": "$999/month", "features": ["Analytics", "Reporting"]}
         )
@@ -337,7 +337,7 @@ class TestEntityRelationshipsAPI:
             entity_type="company",
             name="Competitor Inc",
             aliases=[],
-            first_mentioned=datetime.utcnow(),
+            first_mentioned=datetime.now(timezone.utc),
             competitor_id=test_competitor.id,
             entity_metadata={}
         )
@@ -345,7 +345,7 @@ class TestEntityRelationshipsAPI:
             entity_type="company",
             name="Microsoft",
             aliases=[],
-            first_mentioned=datetime.utcnow(),
+            first_mentioned=datetime.now(timezone.utc),
             competitor_id=test_competitor.id,
             entity_metadata={}
         )
@@ -387,7 +387,7 @@ class TestEntityRelationshipsAPI:
                 entity_type="company",
                 name=f"Company {i}",
                 aliases=[],
-                first_mentioned=datetime.utcnow(),
+                first_mentioned=datetime.now(timezone.utc),
                 competitor_id=test_competitor.id,
                 entity_metadata={}
             )
@@ -441,7 +441,7 @@ class TestStrategicAnalyticsAPI:
                 competitor_id=test_competitor.id,
                 event_category="acquisition",
                 confidence=0.9,
-                event_date=datetime.utcnow(),
+                event_date=datetime.now(timezone.utc),
                 title="Test 1",
                 description="Test",
                 entities_involved={},
@@ -452,7 +452,7 @@ class TestStrategicAnalyticsAPI:
                 competitor_id=test_competitor.id,
                 event_category="acquisition",
                 confidence=0.92,
-                event_date=datetime.utcnow(),
+                event_date=datetime.now(timezone.utc),
                 title="Test 2",
                 description="Test",
                 entities_involved={},
@@ -463,7 +463,7 @@ class TestStrategicAnalyticsAPI:
                 competitor_id=test_competitor.id,
                 event_category="partnership",
                 confidence=0.88,
-                event_date=datetime.utcnow(),
+                event_date=datetime.now(timezone.utc),
                 title="Test 3",
                 description="Test",
                 entities_involved={},
@@ -497,7 +497,7 @@ class TestStrategicAnalyticsAPI:
                 entity_type="product",
                 name="Product 1",
                 aliases=[],
-                first_mentioned=datetime.utcnow(),
+                first_mentioned=datetime.now(timezone.utc),
                 competitor_id=test_competitor.id,
                 entity_metadata={}
             ),
@@ -505,7 +505,7 @@ class TestStrategicAnalyticsAPI:
                 entity_type="product",
                 name="Product 2",
                 aliases=[],
-                first_mentioned=datetime.utcnow(),
+                first_mentioned=datetime.now(timezone.utc),
                 competitor_id=test_competitor.id,
                 entity_metadata={}
             ),
@@ -513,7 +513,7 @@ class TestStrategicAnalyticsAPI:
                 entity_type="person",
                 name="Person 1",
                 aliases=[],
-                first_mentioned=datetime.utcnow(),
+                first_mentioned=datetime.now(timezone.utc),
                 competitor_id=test_competitor.id,
                 entity_metadata={}
             )
@@ -544,7 +544,7 @@ class TestStrategicAnalyticsAPI:
                 competitor_id=test_competitor.id,
                 event_category="market_entry",
                 confidence=0.9,
-                event_date=datetime.utcnow() - timedelta(days=10),
+                event_date=datetime.now(timezone.utc) - timedelta(days=10),
                 title="Expansion",
                 description="Test",
                 entities_involved={},
@@ -555,7 +555,7 @@ class TestStrategicAnalyticsAPI:
                 competitor_id=test_competitor.id,
                 event_category="acquisition",
                 confidence=0.92,
-                event_date=datetime.utcnow() - timedelta(days=5),
+                event_date=datetime.now(timezone.utc) - timedelta(days=5),
                 title="Acquired Company",
                 description="Test",
                 entities_involved={},

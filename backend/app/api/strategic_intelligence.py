@@ -7,7 +7,7 @@ Provides competitive intelligence on high-value strategic moves.
 
 import logging
 from typing import List, Optional
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlalchemy.orm import Session
 from sqlalchemy import func
@@ -89,7 +89,7 @@ def get_strategic_events(
 
     # Apply date filter
     if days:
-        cutoff_date = datetime.utcnow() - timedelta(days=days)
+        cutoff_date = datetime.now(timezone.utc) - timedelta(days=days)
         query = query.filter(StrategicEvent.event_date >= cutoff_date)
 
     # Order by date (newest first)

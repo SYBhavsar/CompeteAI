@@ -12,7 +12,7 @@ Following TDD - these tests will FAIL initially.
 
 import pytest
 from fastapi.testclient import TestClient
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 from sqlalchemy.orm import Session
 
 from app.main import app
@@ -80,19 +80,19 @@ def test_competitor_with_history(test_user_and_token):
         # Create snapshots
         snapshot1 = CompetitiveSnapshot(
             competitor_id=competitor.id,
-            snapshot_date=datetime.utcnow() - timedelta(days=7),
+            snapshot_date=datetime.now(timezone.utc) - timedelta(days=7),
             data_hash="hash1",
             snapshot_data={"pricing": "$99/month"}
         )
         snapshot2 = CompetitiveSnapshot(
             competitor_id=competitor.id,
-            snapshot_date=datetime.utcnow() - timedelta(days=3),
+            snapshot_date=datetime.now(timezone.utc) - timedelta(days=3),
             data_hash="hash2",
             snapshot_data={"pricing": "$149/month"}
         )
         snapshot3 = CompetitiveSnapshot(
             competitor_id=competitor.id,
-            snapshot_date=datetime.utcnow(),
+            snapshot_date=datetime.now(timezone.utc),
             data_hash="hash3",
             snapshot_data={"pricing": "$149/month"}
         )
@@ -117,7 +117,7 @@ def test_competitor_with_history(test_user_and_token):
         timeline1 = CompetitorTimeline(
             competitor_id=competitor.id,
             event_type="pricing_change",
-            event_date=datetime.utcnow() - timedelta(days=3),
+            event_date=datetime.now(timezone.utc) - timedelta(days=3),
             title="Major Price Increase",
             description="Increased pricing by 50%",
             source_urls=["https://competitor.com/pricing"]
@@ -125,7 +125,7 @@ def test_competitor_with_history(test_user_and_token):
         timeline2 = CompetitorTimeline(
             competitor_id=competitor.id,
             event_type="product_launch",
-            event_date=datetime.utcnow() - timedelta(days=30),
+            event_date=datetime.now(timezone.utc) - timedelta(days=30),
             title="Launched New AI Feature",
             description="Released AI-powered analytics",
             source_urls=["https://competitor.com/blog/ai-launch"]

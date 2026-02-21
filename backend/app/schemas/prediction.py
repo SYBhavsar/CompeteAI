@@ -4,12 +4,14 @@ Prediction Schemas
 Pydantic models for predictive analytics API.
 """
 
-from pydantic import BaseModel
+from pydantic import BaseModel, ConfigDict
 from typing import Optional, List
 from datetime import datetime
 
 
 class PredictionResponse(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+
     id: int
     competitor_id: int
     prediction_type: str
@@ -20,9 +22,6 @@ class PredictionResponse(BaseModel):
     outcome: str
     predicted_at: datetime
     resolved_at: Optional[datetime]
-
-    class Config:
-        from_attributes = True
 
 
 class ValidateOutcomeRequest(BaseModel):

@@ -8,7 +8,7 @@ Following TDD - these tests will FAIL initially.
 """
 
 import pytest
-from datetime import datetime
+from datetime import datetime, timezone
 from unittest.mock import Mock, patch
 
 from app.core.database import SessionLocal, Base, engine
@@ -179,7 +179,7 @@ class TestStrategicPipelineIntegration:
             entity_type="company",
             name="Microsoft",
             aliases=[],
-            first_mentioned=datetime.utcnow(),
+            first_mentioned=datetime.now(timezone.utc),
             competitor_id=test_competitor.id,
             entity_metadata={}
         )
